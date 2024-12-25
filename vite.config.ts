@@ -13,5 +13,12 @@ export default defineConfig({
       name: 'Chart4JS',
       formats: ['es', 'umd']
     }
-  }
+  },
+  resolve: { alias: { src: resolve('src/') } },
+//   test: {
+//     setupFiles: ['src/setupTests.ts'],
+//     coverage: {
+//       exclude: ['*.config.*', '*.d.ts'],
+//     },
+//   },  
 })
