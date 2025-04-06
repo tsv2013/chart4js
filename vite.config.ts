@@ -11,6 +11,15 @@ const config = defineConfig({
       entry: resolve(__dirname, 'lib/main.ts'),
       name: 'Chart4JS',
       formats: ['es', 'umd'],
+      fileName: (format) => `chart4js.${format}.js`,
+    },
+    rollupOptions: {
+      external: ['lit'],
+      output: {
+        globals: {
+          lit: 'Lit',
+        },
+      },
     },
   },
   resolve: { alias: { src: resolve('src/') } },
