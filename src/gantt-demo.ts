@@ -243,7 +243,7 @@ export class GanttDemo extends LitElement {
 
   render() {
     return html`
-      <h1>Gantt Chart Demo</h1>
+      <h3>Project Timeline</h3>
 
       <div class="demo-container">
         <div class="controls">

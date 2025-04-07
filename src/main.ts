@@ -130,6 +130,7 @@ export class AppRoot extends LitElement {
     }
     .chart-row {
       display: flex;
+      gap: 1rem;
       justify-content: space-between;
       margin-bottom: 30px;
     }
@@ -208,19 +209,6 @@ export class AppRoot extends LitElement {
           </div>
         </div>
 
-        <h2>Pie Chart Example</h2>
-        <div class="chart-row">
-          <div class="chart-container">
-            <h3>Interactive Pie Chart</h3>
-            <pie-chart
-              .data=${pieData}
-              .showValues=${true}
-              .showLegend=${true}
-              .hoverEffects=${true}
-            ></pie-chart>
-          </div>
-        </div>
-
         <h2>Line Chart Examples</h2>
         <div class="chart-row">
           <div class="chart-container">
@@ -245,17 +233,32 @@ export class AppRoot extends LitElement {
           </div>
         </div>
 
-        <div class="chart-container">
-          <h2>Gauge Chart</h2>
-          <gauge-chart
-            value="65"
-            min="0"
-            max="100"
-            warning="50"
-            critical="75"
-            units="%"
-            title="CPU Usage"
-          ></gauge-chart>
+        <h2>Pie Chart Example</h2>
+        <div class="chart-row">
+          <div class="chart-container">
+            <h3>Interactive Pie Chart</h3>
+            <pie-chart
+              .data=${pieData}
+              .showValues=${true}
+              .showLegend=${true}
+              .hoverEffects=${true}
+            ></pie-chart>
+          </div>
+        </div>
+
+        <h2>Gauge Chart Example</h2>
+        <div class="chart-row">
+          <div class="chart-container">
+            <gauge-chart
+              value="65"
+              min="0"
+              max="100"
+              warning="50"
+              critical="75"
+              units="%"
+              title="CPU Usage"
+            ></gauge-chart>
+          </div>
         </div>
 
         <div class="chart-container">
@@ -278,9 +281,11 @@ export class AppRoot extends LitElement {
           ></word-cloud>
         </div>
 
-        <div class="chart-container">
-          <h2>Gantt Chart</h2>
-          <gantt-demo></gantt-demo>
+        <h2>Gantt Chart Example</h2>
+        <div class="chart-row">
+          <div class="chart-container">
+            <gantt-demo></gantt-demo>
+          </div>
         </div>
       </div>
     `;

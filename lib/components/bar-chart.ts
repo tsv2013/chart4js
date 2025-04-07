@@ -25,11 +25,15 @@ export class BarChart extends BaseChart {
     this.drawChart();
   }
 
+  public get hasMultipleDatasets() {
+    return this.datasets && this.datasets.length;
+  }
+
   private processData() {
     if (!this.data.length) return;
 
     // Check if we have multiple datasets
-    if (this.datasets && this.datasets.length > 0) {
+    if (this.hasMultipleDatasets) {
       // Process multiple datasets
       const processedData: any[] = [];
 
@@ -65,7 +69,7 @@ export class BarChart extends BaseChart {
       this.maxValue = 0;
 
       // Create datasets directly from the data
-      this.datasets = this.data.map((item, index) => {
+      const processedData: any[] = this.data.map((item, index) => {
         const value = item[this.yKey];
         this.maxValue = Math.max(this.maxValue, value);
 
@@ -78,7 +82,7 @@ export class BarChart extends BaseChart {
       });
 
       // Apply pagination
-      this.processedData = this.datasets.slice(
+      this.processedData = processedData.slice(
         this.offset,
         this.offset + this.limit,
       );
@@ -201,9 +205,7 @@ export class BarChart extends BaseChart {
     }
 
     // Check if we have multiple datasets
-    const hasMultipleDatasets = this.datasets && this.datasets.length > 0;
-
-    if (hasMultipleDatasets) {
+    if (this.hasMultipleDatasets) {
       // Draw bars for multiple datasets
       this.processedData.forEach((item, index) => {
         const x = xScale(index);
@@ -326,45 +328,41 @@ export class BarChart extends BaseChart {
   }
 
   private renderLegend(g: SVGGElement, width: number) {
-    const legendGroup = SVGHelper.createGroup(`translate(${width - 150}, 10)`);
-    g.appendChild(legendGroup);
-
-    // Add legend title
-    const title = SVGHelper.createText('Legend', {
-      x: 0,
-      y: 0,
-      anchor: 'start',
-      fontSize: '12px',
-    });
-    legendGroup.appendChild(title);
+    const legend = SVGHelper.createGroup(
+      `translate(${width / 2},${this.height - this.margin.bottom + 25})`,
+    );
+    g.appendChild(legend);
 
     // Add legend items
     this.datasets.forEach((dataset, index) => {
-      const y = 20 + index * 20;
+      const legendItem = SVGHelper.createGroup(
+        `translate(${index * 100 - this.datasets.length * 50},0)`,
+      );
 
       // Add color box
       const box = SVGHelper.createRect({
         x: 0,
-        y: y - 10,
+        y: -7.5,
         width: 15,
         height: 15,
         fill: this.getColor(index),
         stroke: this.getBorderColor(index),
         strokeWidth: '1',
       });
-      legendGroup.appendChild(box);
+      legendItem.appendChild(box);
 
       // Add label
       const text = SVGHelper.createText(
         dataset.label || `Dataset ${index + 1}`,
         {
-          x: 25,
-          y: y,
-          anchor: 'start',
-          fontSize: '10px',
+          x: 20,
+          y: 4,
+          fontSize: '12px',
         },
       );
-      legendGroup.appendChild(text);
+      legendItem.appendChild(text);
+
+      legend.appendChild(legendItem);
     });
   }
 

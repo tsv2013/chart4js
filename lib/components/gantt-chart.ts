@@ -105,6 +105,7 @@ export class GanttChart extends LitElement {
       height: 32px;
       line-height: 32px;
       padding: 0 10px;
+      padding-top: 34px;
       background-color: #e0e0e0;
       font-weight: bold;
     }

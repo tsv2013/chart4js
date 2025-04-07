@@ -164,17 +164,13 @@ export class WordCloud extends LitElement {
       x: container.offsetWidth / 2,
       y: container.offsetHeight / 2,
     };
-    const currentPoint = { x: 0, y: 0 };
+    const currentPoint = { x: startPoint.x, y: startPoint.y };
 
     const [yMin, yMax] = this.arrangeWords(container, startPoint, currentPoint);
 
     if (this.options.maxHeight === 0) {
       container.style.height = `${yMax - yMin + this.options.padding * 2}px`;
     }
-
-    this.placedWords.forEach((wordInfo) => {
-      wordInfo.element.style.top = `${wordInfo.top - yMin + this.options.padding}px`;
-    });
   }
 
   protected firstUpdated() {

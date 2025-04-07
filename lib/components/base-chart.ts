@@ -28,8 +28,8 @@ export class BaseChart extends LitElement {
   @property({ type: Object }) margin = {
     top: 20,
     right: 20,
-    bottom: 30,
-    left: 40,
+    bottom: 80,
+    left: 60,
   };
   @property({ type: Array }) colors = [
     '7, 171, 160',
