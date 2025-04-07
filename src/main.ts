@@ -7,6 +7,7 @@ import '../lib/components/word-cloud';
 import '../lib/components/bar-chart';
 import '../lib/components/pie-chart';
 import '../lib/components/line-chart';
+import '../lib/components/gauge-chart';
 
 // Sample data for charts
 const barData = [
@@ -139,6 +140,19 @@ export class AppRoot extends LitElement {
             showPoints
             pointRadius="5"
           ></line-chart>
+        </div>
+
+        <div class="chart-container">
+          <h2>Gauge Chart</h2>
+          <gauge-chart
+            value="65"
+            min="0"
+            max="100"
+            warning="50"
+            critical="75"
+            units="%"
+            title="CPU Usage"
+          ></gauge-chart>
         </div>
 
         <div class="chart-container">
