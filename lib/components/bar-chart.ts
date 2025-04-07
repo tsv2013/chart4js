@@ -28,36 +28,61 @@ export class BarChart extends BaseChart {
   private processData() {
     if (!this.data.length) return;
 
-    // Group data by xKey if multiple datasets
-    const groupedData = this.data.reduce((acc, item) => {
-      const xValue = item[this.xKey];
-      if (!acc[xValue]) {
-        acc[xValue] = [];
-      }
-      acc[xValue].push(item);
-      return acc;
-    }, {});
+    // Check if we have multiple datasets
+    if (this.datasets && this.datasets.length > 0) {
+      // Process multiple datasets
+      const processedData: any[] = [];
 
-    // Create datasets
-    this.datasets = Object.keys(groupedData).map((xValue, index) => {
-      const items = groupedData[xValue];
-      const values = items.map((item) => item[this.yKey]);
-      const maxValue = Math.max(...values);
-      this.maxValue = Math.max(this.maxValue, maxValue);
+      // Group data by category
+      const categories = [...new Set(this.data.map((item) => item[this.xKey]))];
 
-      return {
-        label: xValue,
-        data: values,
-        color: this.getColor(index),
-        hoverColor: this.getHoverColor(index),
-      };
-    });
+      // For each category, create a dataset entry
+      categories.forEach((category) => {
+        const categoryData = this.data.find(
+          (item) => item[this.xKey] === category,
+        );
+        const values = this.datasets.map(
+          (datasetKey) => categoryData[datasetKey],
+        );
+        const maxValue = Math.max(...values);
+        this.maxValue = Math.max(this.maxValue, maxValue);
 
-    // Apply pagination
-    this.processedData = this.datasets.slice(
-      this.offset,
-      this.offset + this.limit,
-    );
+        processedData.push({
+          label: category,
+          data: values,
+          colors: this.datasets.map((_, i) => this.getColor(i)),
+          hoverColors: this.datasets.map((_, i) => this.getHoverColor(i)),
+          borderColors: this.datasets.map((_, i) => this.getBorderColor(i)),
+        });
+      });
+
+      this.processedData = processedData.slice(
+        this.offset,
+        this.offset + this.limit,
+      );
+    } else {
+      // Original single dataset processing
+      this.maxValue = 0;
+
+      // Create datasets directly from the data
+      this.datasets = this.data.map((item, index) => {
+        const value = item[this.yKey];
+        this.maxValue = Math.max(this.maxValue, value);
+
+        return {
+          label: item[this.xKey],
+          data: [value],
+          color: this.getColor(index),
+          hoverColor: this.getHoverColor(index),
+        };
+      });
+
+      // Apply pagination
+      this.processedData = this.datasets.slice(
+        this.offset,
+        this.offset + this.limit,
+      );
+    }
   }
 
   private getColor(index: number): string {
@@ -104,50 +129,61 @@ export class BarChart extends BaseChart {
   }
 
   private drawChart() {
-    if (!this.svgElement || !this.processedData.length) return;
+    if (!this.renderRoot || !this.processedData.length) return;
+
+    // Clear previous content
+    const svg = this.renderRoot.querySelector('svg');
+    if (!svg) return;
+    svg.innerHTML = '';
 
     const width = this.width - this.margin.left - this.margin.right;
     const height = this.height - this.margin.top - this.margin.bottom;
-
-    // Clear previous chart
-    this.svgElement.innerHTML = '';
 
     // Create chart group
     const g = SVGHelper.createGroup(
       `translate(${this.margin.left},${this.margin.top})`,
     );
-    this.svgElement.appendChild(g);
+    svg.appendChild(g);
 
-    // Calculate scales
-    const barWidth = width / this.processedData.length;
-    const yScale = height / this.maxValue;
+    // Calculate scales - Fix y-axis direction
+    const xScale = (x: number) => (x / this.processedData.length) * width;
+    const yScale = (y: number) => (y / this.maxValue) * height; // Fixed: Correct y-axis direction
 
-    // Add X axis
+    // Draw axes
     const xAxis = SVGHelper.createGroup(`translate(0,${height})`);
     g.appendChild(xAxis);
 
-    // Add X axis labels
-    this.processedData.forEach((dataset, i) => {
-      const text = SVGHelper.createText(dataset.label, {
-        x: i * barWidth + barWidth / 2,
-        y: 20,
-        anchor: 'middle',
-        transform: 'rotate(-45)',
-      });
-      xAxis.appendChild(text);
+    // Draw X axis line
+    const xAxisLine = SVGHelper.createLine({
+      x1: 0,
+      y1: 0,
+      x2: width,
+      y2: 0,
+      stroke: '#ddd',
     });
+    xAxis.appendChild(xAxisLine);
 
-    // Add Y axis
+    // Draw Y axis
     const yAxis = SVGHelper.createGroup();
     g.appendChild(yAxis);
 
-    // Add Y axis labels
+    // Draw Y axis line
+    const yAxisLine = SVGHelper.createLine({
+      x1: 0,
+      y1: 0,
+      x2: 0,
+      y2: height,
+      stroke: '#ddd',
+    });
+    yAxis.appendChild(yAxisLine);
+
+    // Draw Y axis labels - Fix y-axis direction
     const yTicks = 5;
     for (let i = 0; i <= yTicks; i++) {
-      const y = height - (i * height) / yTicks;
-      const value = ((i * this.maxValue) / yTicks).toFixed(1);
+      const y = height - (i * height) / yTicks; // Fixed: Correct y-axis direction
+      const value = (this.maxValue * i) / yTicks;
 
-      const text = SVGHelper.createText(value, {
+      const text = SVGHelper.createText(value.toFixed(0), {
         x: -5,
         y,
         anchor: 'end',
@@ -164,66 +200,172 @@ export class BarChart extends BaseChart {
       yAxis.appendChild(line);
     }
 
-    // Add bars
-    this.processedData.forEach((dataset, i) => {
-      const barHeight = dataset.data[0] * yScale;
-      const rect = SVGHelper.createRect({
-        x: i * barWidth,
-        y: height - barHeight,
-        width: barWidth - 2,
-        height: barHeight,
-        fill: this.hoveredBar === i ? dataset.hoverColor : dataset.color,
-        stroke: this.getBorderColor(i),
-        strokeWidth: 1,
-      });
+    // Check if we have multiple datasets
+    const hasMultipleDatasets = this.datasets && this.datasets.length > 0;
 
-      // Add hover events
-      if (this.hoverEffects) {
-        rect.addEventListener('mouseenter', () => this.handleBarHover(i));
-        rect.addEventListener('mouseleave', () => this.handleBarLeave());
-      }
+    if (hasMultipleDatasets) {
+      // Draw bars for multiple datasets
+      this.processedData.forEach((item, index) => {
+        const x = xScale(index);
+        const barWidth = xScale(1) * 0.8; // 80% of the available width
 
-      g.appendChild(rect);
+        // Calculate the number of datasets and the width for each bar
+        const datasetCount = this.datasets.length;
+        const singleBarWidth = barWidth / datasetCount;
 
-      // Add value labels
-      if (this.showValues) {
-        const text = SVGHelper.createText(dataset.data[0].toString(), {
-          x: i * barWidth + (barWidth - 2) / 2,
-          y: height - barHeight - 5,
+        // Draw a bar for each dataset
+        this.datasets.forEach((dataset, datasetIndex) => {
+          const value = item.data[datasetIndex];
+          const barHeight = yScale(value); // Fixed: Correct bar height calculation
+          const barX = x + datasetIndex * singleBarWidth;
+
+          // Create the bar
+          const bar = SVGHelper.createRect({
+            x: barX,
+            y: height - barHeight, // Fixed: Correct bar position
+            width: singleBarWidth,
+            height: barHeight,
+            fill:
+              this.hoveredBar === index
+                ? item.hoverColors[datasetIndex]
+                : item.colors[datasetIndex],
+            stroke: item.borderColors[datasetIndex],
+            strokeWidth: '1',
+          });
+
+          // Add hover effects
+          if (this.hoverEffects) {
+            bar.addEventListener('mouseenter', () => {
+              this.hoveredBar = index;
+              this.drawChart();
+            });
+            bar.addEventListener('mouseleave', () => {
+              this.hoveredBar = null;
+              this.drawChart();
+            });
+          }
+
+          g.appendChild(bar);
+
+          // Add value labels if enabled
+          if (this.showValues) {
+            const text = SVGHelper.createText(value.toFixed(0), {
+              x: barX + singleBarWidth / 2,
+              y: height - barHeight - 5, // Fixed: Correct label position
+              anchor: 'middle',
+            });
+            g.appendChild(text);
+          }
+        });
+
+        // Add X axis labels
+        const text = SVGHelper.createText(item.label, {
+          x: x + barWidth / 2,
+          y: 20,
           anchor: 'middle',
-          fontSize: '12px',
         });
-        g.appendChild(text);
-      }
-    });
-
-    // Add legend if enabled
-    if (this.showLegend) {
-      const legend = SVGHelper.createGroup(`translate(0,${height + 30})`);
-      this.processedData.forEach((dataset, i) => {
-        const legendItem = SVGHelper.createGroup(`translate(${i * 100},0)`);
-
-        const rect = SVGHelper.createRect({
-          x: 0,
-          y: 0,
-          width: 15,
-          height: 15,
-          fill: dataset.color,
-          stroke: this.getBorderColor(i),
-        });
-        legendItem.appendChild(rect);
-
-        const text = SVGHelper.createText(dataset.label, {
-          x: 20,
-          y: 12,
-          fontSize: '12px',
-        });
-        legendItem.appendChild(text);
-
-        legend.appendChild(legendItem);
+        xAxis.appendChild(text);
       });
-      g.appendChild(legend);
+
+      // Render legend if enabled
+      if (this.showLegend) {
+        this.renderLegend(g, width);
+      }
+    } else {
+      // Draw bars for single dataset
+      this.processedData.forEach((item, index) => {
+        const x = xScale(index);
+        const barWidth = xScale(1) * 0.8; // 80% of the available width
+        const value = item.data[0];
+        const barHeight = yScale(value); // Fixed: Correct bar height calculation
+
+        // Create the bar
+        const bar = SVGHelper.createRect({
+          x,
+          y: height - barHeight, // Fixed: Correct bar position
+          width: barWidth,
+          height: barHeight,
+          fill: this.hoveredBar === index ? item.hoverColor : item.color,
+          stroke: this.getBorderColor(index),
+          strokeWidth: '1',
+        });
+
+        // Add hover effects
+        if (this.hoverEffects) {
+          bar.addEventListener('mouseenter', () => {
+            this.hoveredBar = index;
+            this.drawChart();
+          });
+          bar.addEventListener('mouseleave', () => {
+            this.hoveredBar = null;
+            this.drawChart();
+          });
+        }
+
+        g.appendChild(bar);
+
+        // Add value labels if enabled
+        if (this.showValues) {
+          const text = SVGHelper.createText(value.toFixed(0), {
+            x: x + barWidth / 2,
+            y: height - barHeight - 5, // Fixed: Correct label position
+            anchor: 'middle',
+          });
+          g.appendChild(text);
+        }
+
+        // Add X axis labels
+        const text = SVGHelper.createText(item.label, {
+          x: x + barWidth / 2,
+          y: 20,
+          anchor: 'middle',
+        });
+        xAxis.appendChild(text);
+      });
     }
+  }
+
+  private renderLegend(g: SVGGElement, width: number) {
+    const legendGroup = SVGHelper.createGroup(`translate(${width - 150}, 10)`);
+    g.appendChild(legendGroup);
+
+    // Add legend title
+    const title = SVGHelper.createText('Legend', {
+      x: 0,
+      y: 0,
+      anchor: 'start',
+      fontSize: '12px',
+    });
+    legendGroup.appendChild(title);
+
+    // Add legend items
+    this.datasets.forEach((dataset, index) => {
+      const y = 20 + index * 20;
+
+      // Add color box
+      const box = SVGHelper.createRect({
+        x: 0,
+        y: y - 10,
+        width: 15,
+        height: 15,
+        fill: this.getColor(index),
+        stroke: this.getBorderColor(index),
+        strokeWidth: '1',
+      });
+      legendGroup.appendChild(box);
+
+      // Add label
+      const text = SVGHelper.createText(
+        dataset.label || `Dataset ${index + 1}`,
+        {
+          x: 25,
+          y: y,
+          anchor: 'start',
+          fontSize: '10px',
+        },
+      );
+      legendGroup.appendChild(text);
+    });
   }
 
   protected override render() {

@@ -77,6 +77,8 @@ export class SVGHelper {
     width: number;
     height: number;
     fill?: string;
+    stroke?: string;
+    strokeWidth?: string;
   }): SVGRectElement {
     const rect = document.createElementNS(this.SVG_NS, 'rect');
     rect.setAttribute('x', options.x.toString());
@@ -85,6 +87,12 @@ export class SVGHelper {
     rect.setAttribute('height', options.height.toString());
     if (options.fill) {
       rect.setAttribute('fill', options.fill);
+    }
+    if (options.stroke) {
+      rect.setAttribute('stroke', options.stroke);
+    }
+    if (options.strokeWidth) {
+      rect.setAttribute('stroke-width', options.strokeWidth);
     }
     return rect;
   }

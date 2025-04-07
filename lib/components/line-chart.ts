@@ -80,7 +80,7 @@ export class LineChart extends BaseChart {
       this.datasets = [
         {
           label: this.yKey,
-          color: this.color,
+          color: this.colors[0],
           data: this.data,
         },
       ];
@@ -114,8 +114,7 @@ export class LineChart extends BaseChart {
     const yMax = Math.max(...yValues);
 
     const xScale = (x: number) => ((x - xMin) / (xMax - xMin)) * width;
-    const yScale = (y: number) =>
-      height - ((y - yMin) / (yMax - yMin)) * height;
+    const yScale = (y: number) => ((y - yMin) / (yMax - yMin)) * height;
 
     // Add X axis
     const xAxis = SVGHelper.createGroup(`translate(0,${height})`);
@@ -151,7 +150,7 @@ export class LineChart extends BaseChart {
     // Add Y axis labels
     const yTicks = 5;
     for (let i = 0; i <= yTicks; i++) {
-      const y = (i * height) / yTicks;
+      const y = height - (i * height) / yTicks;
       const value = yMin + (i * (yMax - yMin)) / yTicks;
 
       const text = SVGHelper.createText(value.toFixed(1), {
@@ -175,7 +174,7 @@ export class LineChart extends BaseChart {
     this.datasets.forEach((dataset, seriesIndex) => {
       const points = dataset.data.map((d, i) => ({
         x: xScale(d[this.xKey]),
-        y: yScale(d[this.yKey]),
+        y: height - yScale(d[this.yKey]),
         original: d,
         index: i,
       }));
