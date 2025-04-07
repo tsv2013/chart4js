@@ -12,21 +12,6 @@ export class PieChart extends BaseChart {
   @state() private hoveredSegment: number | null = null;
   @state() private total: number = 0;
 
-  private getColor(index: number): string {
-    const color = this.colors[index % this.colors.length];
-    return `rgba(${color}, 0.7)`;
-  }
-
-  private getHoverColor(index: number): string {
-    const color = this.colors[index % this.colors.length];
-    return `rgba(${color}, 0.9)`;
-  }
-
-  private getBorderColor(index: number): string {
-    const color = this.colors[index % this.colors.length];
-    return `rgba(${color}, 1)`;
-  }
-
   protected override firstUpdated() {
     super.firstUpdated();
     this.drawChart();
@@ -137,7 +122,7 @@ export class PieChart extends BaseChart {
         d: isHovered ? hoverPathData : pathData,
         fill: isHovered ? this.getHoverColor(i) : this.getColor(i),
         stroke: this.getBorderColor(i),
-        strokeWidth: '2',
+        strokeWidth: '1',
       });
 
       // Add hover events

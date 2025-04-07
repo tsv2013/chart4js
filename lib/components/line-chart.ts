@@ -28,21 +28,6 @@ export class LineChart extends BaseChart {
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   @state() private datasets: any[] = [];
 
-  private getColor(index: number): string {
-    const color = this.colors[index % this.colors.length];
-    return `rgba(${color}, 0.7)`;
-  }
-
-  private getHoverColor(index: number): string {
-    const color = this.colors[index % this.colors.length];
-    return `rgba(${color}, 0.9)`;
-  }
-
-  private getBorderColor(index: number): string {
-    const color = this.colors[index % this.colors.length];
-    return `rgba(${color}, 1)`;
-  }
-
   private getAreaColor(index: number): string {
     const color = this.colors[index % this.colors.length];
     return `rgba(${color}, 0.1)`;
@@ -137,7 +122,7 @@ export class LineChart extends BaseChart {
         x1: x,
         y1: 0,
         x2: x,
-        y2: height,
+        y2: 5,
         stroke: '#ddd',
       });
       xAxis.appendChild(line);

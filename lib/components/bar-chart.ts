@@ -89,21 +89,6 @@ export class BarChart extends BaseChart {
     }
   }
 
-  private getColor(index: number): string {
-    const color = this.colors[index % this.colors.length];
-    return `rgba(${color}, 0.2)`;
-  }
-
-  private getHoverColor(index: number): string {
-    const color = this.colors[index % this.colors.length];
-    return `rgba(${color}, 0.4)`;
-  }
-
-  private getBorderColor(index: number): string {
-    const color = this.colors[index % this.colors.length];
-    return `rgba(${color}, 1)`;
-  }
-
   private prev() {
     if (this.offset >= this.limit) {
       this.offset -= this.limit;

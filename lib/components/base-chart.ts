@@ -52,6 +52,21 @@ export class BaseChart extends LitElement {
   @state()
   protected svgElement: SVGSVGElement | null = null;
 
+  protected getColor(index: number): string {
+    const color = this.colors[index % this.colors.length];
+    return `rgba(${color}, 0.2)`;
+  }
+
+  protected getHoverColor(index: number): string {
+    const color = this.colors[index % this.colors.length];
+    return `rgba(${color}, 0.4)`;
+  }
+
+  protected getBorderColor(index: number): string {
+    const color = this.colors[index % this.colors.length];
+    return `rgba(${color}, 1)`;
+  }
+
   protected createRenderRoot() {
     const root = super.createRenderRoot();
     const style = document.createElement('style');
