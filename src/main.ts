@@ -1,14 +1,12 @@
 import './style.css';
-import typescriptLogo from './typescript.svg';
-import viteLogo from '/vite.svg';
-import { setupCounter } from './counter';
-import { render, html } from 'lit';
 
-import { BarChart } from '../lib/components/bar-chart';
-import { PieChart } from '../lib/components/pie-chart';
-import { LineChart } from '../lib/components/line-chart';
+import { LitElement, html, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-export const charts = [BarChart, PieChart, LineChart];
+import '../lib/components/word-cloud';
+import '../lib/components/bar-chart';
+import '../lib/components/pie-chart';
+import '../lib/components/line-chart';
 
 // Sample data for charts
 const barData = [
@@ -37,103 +35,136 @@ const lineData = [
   { x: 6, y: 2 },
 ];
 
-// Create the main template
-const template = html`
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-  </div>
-  <div class="chart-container">
-    <h1>Chart4JS Examples</h1>
-    <div class="chart-row">
-      <div class="chart-wrapper">
-        <h2>Bar Chart</h2>
-        <bar-chart
-          width="600"
-          height="400"
-          title="Bar Chart Example"
-          .data=${barData}
-          color="#1f77b4"
-        ></bar-chart>
-      </div>
-    </div>
-    <div class="chart-row">
-      <div class="chart-wrapper">
-        <h2>Pie Chart</h2>
-        <pie-chart
-          width="600"
-          height="400"
-          title="Pie Chart Example"
-          .data=${pieData}
-          innerRadius="50"
-        ></pie-chart>
-      </div>
-    </div>
-    <div class="chart-row">
-      <div class="chart-wrapper">
-        <h2>Line Chart</h2>
-        <line-chart
-          width="600"
-          height="400"
-          title="Line Chart Example"
-          .data=${lineData}
-          color="#2ca02c"
-          lineWidth="3"
-          showPoints
-          pointRadius="5"
-        ></line-chart>
-      </div>
-    </div>
-  </div>
-`;
+@customElement('app-root')
+export class AppRoot extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .chart-container {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 2rem;
+    }
+    h2 {
+      color: #555;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .chart-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+    .chart-wrapper {
+      flex: 1;
+      margin: 0 15px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  `;
 
-// Render the template to the app container
-render(template, document.querySelector<HTMLDivElement>('#app')!);
+  private sampleWords = [
+    ['JavaScript', 100],
+    ['TypeScript', 90],
+    ['React', 85],
+    ['Vue', 80],
+    ['Angular', 75],
+    ['Lit', 70],
+    ['Web Components', 65],
+    ['HTML', 60],
+    ['CSS', 55],
+    ['Node.js', 50],
+    ['Express', 45],
+    ['Next.js', 40],
+    ['GraphQL', 35],
+    ['REST', 30],
+    ['API', 25],
+    ['Testing', 20],
+  ];
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!);
+  private colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD'];
 
-// Add some basic styles
-const style = document.createElement('style');
-style.textContent = `
-  .chart-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: Arial, sans-serif;
+  render() {
+    return html`
+      <div class="container">
+        <h1>Chart4JS Examples</h1>
+
+        <div class="chart-container">
+          <h2>Bar Chart</h2>
+          <bar-chart
+            width="600"
+            height="400"
+            title="Bar Chart Example"
+            .data=${barData}
+            color="#1f77b4"
+          ></bar-chart>
+        </div>
+
+        <div class="chart-container">
+          <h2>Pie Chart</h2>
+          <pie-chart
+            width="600"
+            height="400"
+            title="Pie Chart Example"
+            .data=${pieData}
+            innerRadius="50"
+          ></pie-chart>
+        </div>
+
+        <div class="chart-container">
+          <h2>Line Chart</h2>
+          <line-chart
+            width="600"
+            height="400"
+            title="Line Chart Example"
+            .data=${lineData}
+            color="#2ca02c"
+            lineWidth="3"
+            showPoints
+            pointRadius="5"
+          ></line-chart>
+        </div>
+
+        <div class="chart-container">
+          <h2>Word Cloud</h2>
+          <word-cloud
+            .words=${this.sampleWords}
+            .colors=${this.colors}
+            .options=${{
+              spiralResolution: 1.5,
+              spiralLimit: 360 * 3,
+              lineHeight: 1,
+              xWordPadding: 5,
+              yWordPadding: 5,
+              weightFactor: 30,
+              topN: 15,
+              maxHeight: 300,
+              padding: 20,
+            }}
+            style="height: 300px;"
+          ></word-cloud>
+        </div>
+      </div>
+    `;
   }
-  
-  h1 {
-    text-align: center;
-    color: #333;
-  }
-  
-  .chart-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-  }
-  
-  .chart-wrapper {
-    flex: 1;
-    margin: 0 15px;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  h2 {
-    text-align: center;
-    margin-top: 0;
-    color: #555;
-  }
-`;
-document.head.appendChild(style);
+}
+
+// Create and append the app root element
+const appRoot = document.createElement('app-root');
+document.body.appendChild(appRoot);
