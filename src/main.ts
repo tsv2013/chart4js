@@ -8,6 +8,9 @@ import '../lib/components/bar-chart';
 import '../lib/components/pie-chart';
 import '../lib/components/line-chart';
 import '../lib/components/gauge-chart';
+import '../lib/components/gantt-chart';
+import '../lib/components/gantt-connector-line';
+import './gantt-demo';
 
 // Sample data for charts
 const barData = [
@@ -173,6 +176,11 @@ export class AppRoot extends LitElement {
             }}
             style="height: 300px;"
           ></word-cloud>
+        </div>
+
+        <div class="chart-container">
+          <h2>Gantt Chart</h2>
+          <gantt-demo></gantt-demo>
         </div>
       </div>
     `;
