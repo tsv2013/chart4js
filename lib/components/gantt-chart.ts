@@ -114,6 +114,7 @@ export class GanttChart extends LitElement {
     }
 
     .gantt-row {
+      position: relative;
       height: 35px;
       padding: 0 10px;
       display: flex;
