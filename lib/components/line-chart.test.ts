@@ -31,7 +31,20 @@ describe('LineChart', () => {
   it('initializes with default properties', () => {
     expect(chart.xKey).toBe('x');
     expect(chart.yKey).toBe('y');
-    expect(chart.color).toBe('#1f77b4');
+    expect(chart.colors).toStrictEqual([
+      '7, 171, 160',
+      '218, 60, 120',
+      '126, 52, 157',
+      '0, 119, 192',
+      '231, 76, 60',
+      '14, 172, 81',
+      '241, 137, 45',
+      '227, 114, 75',
+      '174, 124, 91',
+      '108, 122, 137',
+      '117, 133, 134',
+      '112, 112, 112',
+    ]);
     expect(chart.lineWidth).toBe(2);
     expect(chart.showPoints).toBe(true);
     expect(chart.pointRadius).toBe(4);
@@ -49,7 +62,7 @@ describe('LineChart', () => {
 
     const path = mainGroup?.querySelector('path');
     expect(path).toBeTruthy();
-    expect(path?.getAttribute('stroke')).toBe(chart.color);
+    expect(path?.getAttribute('stroke')).toBe('rgba(7, 171, 160, 1)');
     expect(path?.getAttribute('stroke-width')).toBe(chart.lineWidth.toString());
     expect(path?.getAttribute('fill')).toBe('none');
 
@@ -93,7 +106,7 @@ describe('LineChart', () => {
     chart.data = testData;
     await chart.updateComplete;
 
-    const newColor = '#ff0000';
+    const newColor = 'rgba(7, 171, 160, 1)';
     const newWidth = 4;
 
     chart.color = newColor;

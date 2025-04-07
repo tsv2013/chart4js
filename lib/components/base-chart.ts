@@ -31,6 +31,23 @@ export class BaseChart extends LitElement {
     bottom: 30,
     left: 40,
   };
+  @property({ type: Array }) colors = [
+    '7, 171, 160',
+    '218, 60, 120',
+    '126, 52, 157',
+    '0, 119, 192',
+    '231, 76, 60',
+    '14, 172, 81',
+    '241, 137, 45',
+    '227, 114, 75',
+    '174, 124, 91',
+    '108, 122, 137',
+    '117, 133, 134',
+    '112, 112, 112',
+  ];
+  @property({ type: Boolean }) showLegend = true;
+  @property({ type: Boolean }) showValues = true;
+  @property({ type: Boolean }) hoverEffects = true;
 
   @state()
   protected svgElement: SVGSVGElement | null = null;

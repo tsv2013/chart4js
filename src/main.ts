@@ -21,22 +21,82 @@ const barData = [
   { category: 'E', value: 30 },
 ];
 
+// Sample data for multiple datasets
+const multiDatasetBarData = [
+  { category: 'Q1', sales: 120, profit: 45, expenses: 75 },
+  { category: 'Q2', sales: 150, profit: 60, expenses: 90 },
+  { category: 'Q3', sales: 180, profit: 75, expenses: 105 },
+  { category: 'Q4', sales: 210, profit: 90, expenses: 120 },
+  { category: 'Q5', sales: 240, profit: 105, expenses: 135 },
+  { category: 'Q6', sales: 270, profit: 120, expenses: 150 },
+  { category: 'Q7', sales: 300, profit: 135, expenses: 165 },
+  { category: 'Q8', sales: 330, profit: 150, expenses: 180 },
+  { category: 'Q9', sales: 360, profit: 165, expenses: 195 },
+  { category: 'Q10', sales: 390, profit: 180, expenses: 210 },
+  { category: 'Q11', sales: 420, profit: 195, expenses: 225 },
+  { category: 'Q12', sales: 450, profit: 210, expenses: 240 },
+];
+
 const pieData = [
-  { label: 'Category A', value: 30 },
-  { label: 'Category B', value: 20 },
-  { label: 'Category C', value: 15 },
-  { label: 'Category D', value: 25 },
-  { label: 'Category E', value: 10 },
+  { label: 'Marketing', value: 300 },
+  { label: 'Sales', value: 500 },
+  { label: 'Development', value: 400 },
+  { label: 'Support', value: 200 },
+  { label: 'Administration', value: 100 },
 ];
 
 const lineData = [
-  { x: 0, y: 0 },
-  { x: 1, y: 2 },
-  { x: 2, y: 1 },
-  { x: 3, y: 4 },
-  { x: 4, y: 3 },
-  { x: 5, y: 5 },
-  { x: 6, y: 2 },
+  {
+    label: 'Revenue',
+    data: [
+      { x: 0, y: 100 },
+      { x: 1, y: 120 },
+      { x: 2, y: 150 },
+      { x: 3, y: 140 },
+      { x: 4, y: 180 },
+      { x: 5, y: 200 },
+      { x: 6, y: 190 },
+    ],
+  },
+  {
+    label: 'Costs',
+    data: [
+      { x: 0, y: 80 },
+      { x: 1, y: 90 },
+      { x: 2, y: 110 },
+      { x: 3, y: 100 },
+      { x: 4, y: 130 },
+      { x: 5, y: 150 },
+      { x: 6, y: 140 },
+    ],
+  },
+  {
+    label: 'Profit',
+    data: [
+      { x: 0, y: 20 },
+      { x: 1, y: 30 },
+      { x: 2, y: 40 },
+      { x: 3, y: 40 },
+      { x: 4, y: 50 },
+      { x: 5, y: 50 },
+      { x: 6, y: 50 },
+    ],
+  },
+];
+
+const simpleLineData = [
+  {
+    label: 'Temperature',
+    data: [
+      { x: 0, y: 15 },
+      { x: 1, y: 18 },
+      { x: 2, y: 22 },
+      { x: 3, y: 25 },
+      { x: 4, y: 23 },
+      { x: 5, y: 20 },
+      { x: 6, y: 17 },
+    ],
+  },
 ];
 
 @customElement('app-root')
@@ -81,6 +141,24 @@ export class AppRoot extends LitElement {
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+    .chart-controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .chart-controls button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .chart-controls button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
   `;
 
   private sampleWords = [
@@ -107,42 +185,64 @@ export class AppRoot extends LitElement {
   render() {
     return html`
       <div class="container">
-        <h1>Chart4JS Examples</h1>
-
-        <div class="chart-container">
-          <h2>Bar Chart</h2>
-          <bar-chart
-            width="600"
-            height="400"
-            title="Bar Chart Example"
-            .data=${barData}
-            color="#1f77b4"
-          ></bar-chart>
+        <h2>Bar Chart Examples</h2>
+        <div class="chart-row">
+          <div class="chart-container">
+            <h3>Simple Bar Chart</h3>
+            <bar-chart
+              .data=${barData}
+              .showValues=${true}
+              .showLegend=${false}
+              .hoverEffects=${true}
+            ></bar-chart>
+          </div>
+          <div class="chart-container">
+            <h3>Multi-Dataset Bar Chart</h3>
+            <bar-chart
+              .data=${multiDatasetBarData}
+              .showValues=${true}
+              .showLegend=${true}
+              .hoverEffects=${true}
+              .datasets=${['sales', 'profit', 'expenses']}
+            ></bar-chart>
+          </div>
         </div>
 
-        <div class="chart-container">
-          <h2>Pie Chart</h2>
-          <pie-chart
-            width="600"
-            height="400"
-            title="Pie Chart Example"
-            .data=${pieData}
-            innerRadius="50"
-          ></pie-chart>
+        <h2>Pie Chart Example</h2>
+        <div class="chart-row">
+          <div class="chart-container">
+            <h3>Interactive Pie Chart</h3>
+            <pie-chart
+              .data=${pieData}
+              .showValues=${true}
+              .showLegend=${true}
+              .hoverEffects=${true}
+            ></pie-chart>
+          </div>
         </div>
 
-        <div class="chart-container">
-          <h2>Line Chart</h2>
-          <line-chart
-            width="600"
-            height="400"
-            title="Line Chart Example"
-            .data=${lineData}
-            color="#2ca02c"
-            lineWidth="3"
-            showPoints
-            pointRadius="5"
-          ></line-chart>
+        <h2>Line Chart Examples</h2>
+        <div class="chart-row">
+          <div class="chart-container">
+            <h3>Simple Line Chart</h3>
+            <line-chart
+              .data=${simpleLineData}
+              .showValues=${true}
+              .showLegend=${true}
+              .hoverEffects=${true}
+              .showArea=${false}
+            ></line-chart>
+          </div>
+          <div class="chart-container">
+            <h3>Multi-Dataset Line Chart</h3>
+            <line-chart
+              .data=${lineData}
+              .showValues=${true}
+              .showLegend=${true}
+              .hoverEffects=${true}
+              .showArea=${true}
+            ></line-chart>
+          </div>
         </div>
 
         <div class="chart-container">
