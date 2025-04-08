@@ -250,13 +250,15 @@ export class AppRoot extends LitElement {
         <div class="chart-row">
           <div class="chart-container">
             <gauge-chart
-              value="65"
+              value="75"
               min="0"
               max="100"
-              warning="50"
-              critical="75"
               units="%"
               title="CPU Usage"
+              subtitle="Current system load"
+              precision="1"
+              numTicks="5"
+              arcThickness="30"
             ></gauge-chart>
           </div>
         </div>
