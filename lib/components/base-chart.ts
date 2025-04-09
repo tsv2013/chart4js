@@ -93,9 +93,14 @@ export class BaseChart extends LitElement {
   /** Whether to enable hover effects on chart elements */
   @property({ type: Boolean }) hoverEffects = true;
 
+  /** Duration of animation in milliseconds */
+  @property({ type: Number }) animationDuration = 800;
+
+  /** Flag indicating if this is the first render of the chart */
+  @state() protected isFirstRender = true;
+
   /** Reference to the SVG element used for rendering the chart */
-  @state()
-  protected svgElement: SVGSVGElement | null = null;
+  @state() protected svgElement: SVGSVGElement | null = null;
 
   /**
    * Returns the fill color for a chart element based on its index.

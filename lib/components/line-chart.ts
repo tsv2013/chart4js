@@ -49,16 +49,9 @@ export class LineChart extends BaseChart {
   @property({ type: Boolean })
   showArea = false;
 
-  /** Duration of animation in milliseconds */
-  @property({ type: Number })
-  animationDuration = 800;
-
   /** Currently hovered point, containing series and point indices */
   @state() private hoveredPoint: { series: number; point: number } | null =
     null;
-
-  /** Flag indicating if this is the first render of the chart */
-  @state() private isFirstRender = true;
 
   /** Array of dataset keys for multi-dataset charts */
   /* eslint-disable  @typescript-eslint/no-explicit-any */

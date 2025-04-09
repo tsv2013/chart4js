@@ -39,14 +39,8 @@ export class BarChart extends BaseChart {
   /** Maximum number of bars to display at once */
   @property({ type: Number }) limit = 10;
 
-  /** Duration of animation in milliseconds */
-  @property({ type: Number }) animationDuration = 800;
-
   /** Current offset for paginated data display */
   @state() private offset = 0;
-
-  /** Flag indicating if this is the first render of the chart */
-  @state() private isFirstRender = true;
 
   /** Processed data ready for rendering */
   /* eslint-disable  @typescript-eslint/no-explicit-any */

@@ -88,9 +88,6 @@ export class GaugeChart extends BaseChart {
   /** Number of decimal places to show in values */
   @property({ type: Number }) precision = 0;
 
-  /** Duration of value change animations in milliseconds */
-  @property({ type: Number }) animationDuration = 1000;
-
   /** Color theme configuration for the gauge */
   private theme: GaugeTheme = {
     backgroundColor: 'rgba(200, 200, 200, 0.2)',

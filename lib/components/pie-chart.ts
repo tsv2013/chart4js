@@ -38,9 +38,6 @@ export class PieChart extends BaseChart {
   /** Whether to display percentage values on the segments */
   @property({ type: Boolean }) showPercentages = true;
 
-  /** Duration of animation in milliseconds */
-  @property({ type: Number }) animationDuration = 300;
-
   /** Index of the currently hovered segment, or null if none */
   @state() private hoveredSegment: number | null = null;
 
@@ -49,9 +46,6 @@ export class PieChart extends BaseChart {
 
   /** Array of calculated positions for segment labels */
   @state() private labelPositions: { x: number; y: number }[] = [];
-
-  /** Flag indicating if this is the first render of the chart */
-  @state() private isFirstRender = true;
 
   /**
    * Lifecycle method called after the component is first updated.
