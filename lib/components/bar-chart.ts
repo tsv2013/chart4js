@@ -3,34 +3,87 @@ import { html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SVGHelper } from '../utils/svg-helper';
 
+/**
+ * Bar chart component that extends the base chart functionality.
+ * Displays data as vertical or horizontal bars, with support for
+ * multiple datasets, animations, and interactive features.
+ *
+ * @example
+ * ```html
+ * <bar-chart
+ *   width="600"
+ *   height="400"
+ *   title="Sales by Category"
+ *   data="[{'category': 'Electronics', 'value': 120}, {'category': 'Clothing', 'value': 80}]"
+ *   xKey="category"
+ *   yKey="value"
+ *   showLegend="true"
+ *   showValues="true"
+ * ></bar-chart>
+ * ```
+ */
 @customElement('bar-chart')
 export class BarChart extends BaseChart {
+  /** Property name in the data objects that represents the X-axis categories */
   @property({ type: String }) xKey = 'category';
+
+  /** Property name in the data objects that represents the Y-axis values */
   @property({ type: String }) yKey = 'value';
+
+  /** Default color for the bars when not using the color palette */
   @property({ type: String }) color = '#1f77b4';
+
+  /** Whether to show navigation buttons for paginated data */
   @property({ type: Boolean }) showButtons = true;
+
+  /** Maximum number of bars to display at once */
   @property({ type: Number }) limit = 10;
+
+  /** Duration of animation in milliseconds */
   @property({ type: Number }) animationDuration = 800;
 
+  /** Current offset for paginated data display */
   @state() private offset = 0;
+
+  /** Flag indicating if this is the first render of the chart */
   @state() private isFirstRender = true;
+
+  /** Processed data ready for rendering */
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   @state() private processedData: any[] = [];
+
+  /** Array of dataset keys for multi-dataset charts */
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   @state() private datasets: any[] = [];
+
+  /** Maximum value in the dataset for scaling purposes */
   @state() private maxValue = 0;
+
+  /** Index of the currently hovered bar, or null if none */
   @state() private hoveredBar: number | null = null;
 
+  /**
+   * Lifecycle method called after the component is first updated.
+   * Processes the data and draws the chart.
+   */
   protected override firstUpdated() {
     super.firstUpdated();
     this.processData();
     this.drawChart();
   }
 
+  /**
+   * Checks if the chart has multiple datasets.
+   * @returns True if the chart has multiple datasets, false otherwise
+   */
   public get hasMultipleDatasets() {
     return this.datasets && this.datasets.length;
   }
 
+  /**
+   * Processes the raw data into a format suitable for rendering.
+   * Handles both single and multiple dataset scenarios.
+   */
   private processData() {
     if (!this.data.length) return;
 

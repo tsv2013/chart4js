@@ -3,19 +3,52 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ConnectorPoints } from './gantt-connector-line';
 
-const MIN_TIME_INTERVAL = 60 * 60 * 24 * 1000; // 1 day in milliseconds
+/** Minimum time interval for the Gantt chart grid (1 day in milliseconds) */
+const MIN_TIME_INTERVAL = 60 * 60 * 24 * 1000;
+
+/** Height of each row in the Gantt chart */
 const LINE_HEIGHT = 35;
 
+/**
+ * Adds one day to the given date.
+ * @param date - The date to add to
+ * @returns A new date object one day after the input
+ */
 const addDay = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+
+/**
+ * Adds one week to the given date.
+ * @param date - The date to add to
+ * @returns A new date object one week after the input
+ */
 const addWeek = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7);
+
+/**
+ * Adds one month to the given date.
+ * @param date - The date to add to
+ * @returns A new date object one month after the input
+ */
 const addMonth = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth() + 1, 1);
+
+/**
+ * Adds one quarter (3 months) to the given date.
+ * @param date - The date to add to
+ * @returns A new date object one quarter after the input
+ */
 const addQuarter = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth() + 3, 1);
+
+/**
+ * Adds one year to the given date.
+ * @param date - The date to add to
+ * @returns A new date object one year after the input
+ */
 const addYear = (date: Date): Date => new Date(date.getFullYear() + 1, 0, 1);
 
+/** Array of abbreviated month names */
 const monthNames = [
   'Jan',
   'Feb',
@@ -31,6 +64,7 @@ const monthNames = [
   'Dec',
 ];
 
+/** Scale configurations for different zoom levels */
 const scales = [
   { scale: 0.5, nextDate: addYear },
   { scale: 0.7, nextDate: addYear },
@@ -47,34 +81,79 @@ const scales = [
   { scale: 200, nextDate: addDay },
 ];
 
+/**
+ * Interface representing a task or item in the Gantt chart.
+ */
 export interface GanttItem {
+  /** Unique identifier for the item */
   id: string;
+  /** Display title of the item */
   title: string;
+  /** Start date of the item */
   start: Date;
+  /** End date of the item */
   end: Date;
+  /** Optional color for the item bar */
   color?: string;
+  /** Optional array of markers for the item */
   markers?: GanttMarker[];
+  /** Optional array of links to other items */
   links?: GanttLink[];
 }
 
+/**
+ * Interface representing a marker on the Gantt chart timeline.
+ */
 export interface GanttMarker {
+  /** Date where the marker should appear */
   date: Date;
+  /** Text to display with the marker */
   text: string;
+  /** Optional color for the marker */
   color?: string;
 }
 
+/**
+ * Interface representing a dependency link between two items.
+ */
 export interface GanttLink {
+  /** ID of the source item */
   from: string;
+  /** ID of the target item */
   to: string;
+  /** Start date of the link */
   fromDate: Date;
+  /** End date of the link */
   toDate: Date;
 }
 
+/**
+ * Interface representing a ruler mark on the timeline.
+ */
 export interface GanttRuler {
+  /** Position of the ruler in pixels */
   pos: number;
+  /** Date text to display at the ruler */
   date: string;
 }
 
+/**
+ * Gantt chart component for visualizing project schedules and task dependencies.
+ * Provides interactive timeline visualization with support for task dependencies,
+ * markers, and different time scales.
+ *
+ * @example
+ * ```html
+ * <gantt-chart
+ *   .items="[
+ *     { id: '1', title: 'Task 1', start: new Date('2024-01-01'), end: new Date('2024-01-15') },
+ *     { id: '2', title: 'Task 2', start: new Date('2024-01-10'), end: new Date('2024-01-30') }
+ *   ]"
+ *   showConnectors="true"
+ *   scaleIndex="8"
+ * ></gantt-chart>
+ * ```
+ */
 @customElement('gantt-chart')
 export class GanttChart extends LitElement {
   static styles = css`
@@ -236,31 +315,74 @@ export class GanttChart extends LitElement {
     }
   `;
 
+  /** Array of items/tasks to display in the chart */
   @property({ type: Array }) items: GanttItem[] = [];
+
+  /** Whether to show dependency connectors between linked items */
   @property({ type: Boolean }) showConnectors = true;
+
+  /** Index into the scales array determining the current zoom level */
   @property({ type: Number }) scaleIndex = 8;
+
+  /** Field name for item titles */
   @property({ type: String }) titleField = 'title';
+
+  /** Field name for item start dates */
   @property({ type: String }) startField = 'start';
+
+  /** Field name for item end dates */
   @property({ type: String }) endField = 'end';
+
+  /** Field names for item markers */
   @property({ type: Array }) markerFields: string[] = [];
+
+  /** Field name for item links */
   @property({ type: String }) linksField = 'links';
+
+  /** Field name for item unique identifiers */
   @property({ type: String }) keyField = 'id';
 
+  /** Current scale factor from the scales array */
   @state() private _scale = scales[8].scale;
+
+  /** Current function for calculating next date based on scale */
   @state() private _getNextDate = scales[8].nextDate;
+
+  /** Start date of the visible range */
   @state() private _startDate = new Date();
+
+  /** End date of the visible range */
   @state() private _finishDate = new Date();
+
+  /** Minimum date value in milliseconds */
   @state() private _minDate = 0;
+
+  /** Maximum date value in milliseconds */
   @state() private _maxDate = 0;
+
+  /** Array of ruler marks for the timeline */
   @state() private _rulers: GanttRuler[] = [];
+
+  /** Whether the mouse button is currently pressed */
   @state() private _isMouseDown = false;
+
+  /** X coordinate where mouse was pressed */
   @state() private _mouseDownPageX = 0;
+
+  /** Current horizontal scroll position */
   @state() private _scrollLeft = 0;
+
+  /** Array of connector points for dependency lines */
   @state() private _connectors: ConnectorPoints[] = [];
 
+  /** Map of item links indexed by item ID */
   private _itemLinks: { [key: string]: { index: number; links: GanttLink[] } } =
     {};
 
+  /**
+   * Creates a new GanttChart instance.
+   * Initializes the chart with default settings.
+   */
   constructor() {
     super();
     this._updateScale();
@@ -268,6 +390,12 @@ export class GanttChart extends LitElement {
     this._generateRulers();
   }
 
+  /**
+   * Lifecycle method called when component properties change.
+   * Updates the chart when relevant properties are modified.
+   *
+   * @param changedProperties - Map of changed property names to their old values
+   */
   updated(changedProperties: Map<string, object>) {
     if (changedProperties.has('items') || changedProperties.has('scaleIndex')) {
       this._updateScale();
@@ -277,11 +405,17 @@ export class GanttChart extends LitElement {
     }
   }
 
+  /**
+   * Updates the chart scale based on the current scaleIndex.
+   */
   private _updateScale() {
     this._scale = scales[this.scaleIndex].scale;
     this._getNextDate = scales[this.scaleIndex].nextDate;
   }
 
+  /**
+   * Calculates the date range for the visible items.
+   */
   private _calculateDateRange() {
     if (this.items.length === 0) return;
 
@@ -306,6 +440,9 @@ export class GanttChart extends LitElement {
     this._maxDate = yearEnd.getTime() / MIN_TIME_INTERVAL;
   }
 
+  /**
+   * Generates ruler marks for the timeline based on current scale.
+   */
   private _generateRulers() {
     const rulers: GanttRuler[] = [];
     const startDate = new Date(this._minDate * MIN_TIME_INTERVAL);
@@ -323,6 +460,11 @@ export class GanttChart extends LitElement {
     this._rulers = rulers;
   }
 
+  /**
+   * Formats a date for display on the timeline.
+   * @param date - The date to format
+   * @returns Formatted date string
+   */
   private _getDateText(date: Date): string {
     const text = `${monthNames[date.getMonth()]} '${String(date.getFullYear()).substring(2)}`;
     if (this.scaleIndex < 7) {
@@ -331,16 +473,28 @@ export class GanttChart extends LitElement {
     return `${date.getDate()} ${text}`;
   }
 
+  /**
+   * Converts a date to a pixel position on the timeline.
+   * @param position - The date to convert
+   * @returns Position in pixels
+   */
   private _createScalable(position: Date): number {
     const pos = position.getTime();
     return (pos / MIN_TIME_INTERVAL - this._minDate) * this._scale;
   }
 
+  /**
+   * Gets the pixel position of the current day line.
+   * @returns Position in pixels
+   */
   private _getCurrentDayPosition(): number {
     const now = new Date();
     return this._createScalable(now);
   }
 
+  /**
+   * Scrolls the timeline left by one viewport width.
+   */
   private _moveLeft() {
     this.shadowRoot?.querySelector('.gantt-content')?.scrollBy({
       left: -100,
@@ -348,6 +502,9 @@ export class GanttChart extends LitElement {
     });
   }
 
+  /**
+   * Scrolls the timeline right by one viewport width.
+   */
   private _moveRight() {
     this.shadowRoot?.querySelector('.gantt-content')?.scrollBy({
       left: 100,
@@ -355,6 +512,9 @@ export class GanttChart extends LitElement {
     });
   }
 
+  /**
+   * Decreases the zoom level of the timeline.
+   */
   private _scaleDown() {
     if (this.scaleIndex < scales.length - 1) {
       this.scaleIndex++;
@@ -364,6 +524,9 @@ export class GanttChart extends LitElement {
     }
   }
 
+  /**
+   * Increases the zoom level of the timeline.
+   */
   private _scaleUp() {
     if (this.scaleIndex > 0) {
       this.scaleIndex--;
@@ -373,15 +536,26 @@ export class GanttChart extends LitElement {
     }
   }
 
+  /**
+   * Handles mouse down events for timeline dragging.
+   * @param e - Mouse event
+   */
   private _handleMouseDown(e: MouseEvent) {
     this._isMouseDown = true;
     this._mouseDownPageX = e.pageX;
   }
 
+  /**
+   * Handles mouse up events for timeline dragging.
+   */
   private _handleMouseUp() {
     this._isMouseDown = false;
   }
 
+  /**
+   * Handles mouse move events for timeline dragging.
+   * @param e - Mouse event
+   */
   private _handleMouseMove(e: MouseEvent) {
     if (this._isMouseDown) {
       const deltaX = e.pageX - this._mouseDownPageX;
@@ -394,11 +568,19 @@ export class GanttChart extends LitElement {
     }
   }
 
+  /**
+   * Handles scroll events on the timeline.
+   * @param e - Scroll event
+   */
   private _handleScroll(e: Event) {
     const target = e.target as HTMLElement;
     this._scrollLeft = target.scrollLeft;
   }
 
+  /**
+   * Handles click events on timeline rows.
+   * @param item - The clicked item
+   */
   private _rowClick(item: GanttItem) {
     this.dispatchEvent(
       new CustomEvent('row-click', {
@@ -409,6 +591,9 @@ export class GanttChart extends LitElement {
     );
   }
 
+  /**
+   * Calculates connector points for dependency lines.
+   */
   private _calculateConnectors() {
     if (!this.showConnectors || !this.items.length) {
       this._connectors = [];
@@ -443,6 +628,10 @@ export class GanttChart extends LitElement {
     this._connectors = connectors;
   }
 
+  /**
+   * Renders the Gantt chart component.
+   * @returns Rendered HTML template
+   */
   render() {
     return html`
       <div class="gantt-container">
@@ -557,6 +746,10 @@ export class GanttChart extends LitElement {
     `;
   }
 
+  /**
+   * Renders dependency connector lines between linked items.
+   * @returns Rendered HTML template for connectors
+   */
   private _renderConnectors(): TemplateResult {
     if (!this._connectors.length) return html``;
 

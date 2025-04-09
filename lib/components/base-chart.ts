@@ -2,6 +2,22 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SVGHelper } from '../utils/svg-helper';
 
+/**
+ * Base chart component that provides common functionality for all chart types.
+ * This class serves as the foundation for all chart components in the library,
+ * providing basic SVG rendering, color management, and layout capabilities.
+ *
+ * @example
+ * ```html
+ * <base-chart
+ *   width="600"
+ *   height="400"
+ *   title="My Chart"
+ *   data="[{'category': 'A', 'value': 10}, {'category': 'B', 'value': 20}]"
+ *   showLegend="true"
+ * ></base-chart>
+ * ```
+ */
 @customElement('base-chart')
 export class BaseChart extends LitElement {
   static styles = css`
@@ -20,17 +36,39 @@ export class BaseChart extends LitElement {
     }
   `;
 
+  /** Width of the chart in pixels */
   @property({ type: Number }) width = 600;
+
+  /** Height of the chart in pixels */
   @property({ type: Number }) height = 400;
+
+  /** Title displayed at the top of the chart */
   @property({ type: String }) title = '';
+
+  /**
+   * Data array for the chart. The structure depends on the specific chart type.
+   * For most charts, this should be an array of objects with properties matching
+   * the xKey and yKey values.
+   */
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   @property({ type: Array }) data: any[] = [];
+
+  /**
+   * Margin settings for the chart content.
+   * Controls the spacing between the chart content and the chart boundaries.
+   */
   @property({ type: Object }) margin = {
     top: 20,
     right: 20,
     bottom: 80,
     left: 60,
   };
+
+  /**
+   * Color palette for the chart elements.
+   * Each color is specified as an RGB string without the 'rgb(' prefix.
+   * The colors are used in sequence for different data series or segments.
+   */
   @property({ type: Array }) colors = [
     '7, 171, 160',
     '218, 60, 120',
@@ -45,28 +83,54 @@ export class BaseChart extends LitElement {
     '117, 133, 134',
     '112, 112, 112',
   ];
+
+  /** Whether to display the chart legend */
   @property({ type: Boolean }) showLegend = true;
+
+  /** Whether to display data values on the chart elements */
   @property({ type: Boolean }) showValues = true;
+
+  /** Whether to enable hover effects on chart elements */
   @property({ type: Boolean }) hoverEffects = true;
 
+  /** Reference to the SVG element used for rendering the chart */
   @state()
   protected svgElement: SVGSVGElement | null = null;
 
+  /**
+   * Returns the fill color for a chart element based on its index.
+   * @param index - The index of the element in the data array
+   * @returns A color string in rgba format with 0.2 opacity
+   */
   protected getColor(index: number): string {
     const color = this.colors[index % this.colors.length];
     return `rgba(${color}, 0.2)`;
   }
 
+  /**
+   * Returns the hover color for a chart element based on its index.
+   * @param index - The index of the element in the data array
+   * @returns A color string in rgba format with 0.4 opacity
+   */
   protected getHoverColor(index: number): string {
     const color = this.colors[index % this.colors.length];
     return `rgba(${color}, 0.4)`;
   }
 
+  /**
+   * Returns the border color for a chart element based on its index.
+   * @param index - The index of the element in the data array
+   * @returns A color string in rgba format with 1.0 opacity
+   */
   protected getBorderColor(index: number): string {
     const color = this.colors[index % this.colors.length];
     return `rgba(${color}, 1)`;
   }
 
+  /**
+   * Creates the render root element and adds necessary styles.
+   * @returns The render root element
+   */
   protected createRenderRoot() {
     const root = super.createRenderRoot();
     const style = document.createElement('style');
@@ -81,10 +145,19 @@ export class BaseChart extends LitElement {
     return root;
   }
 
+  /**
+   * Lifecycle method called after the component is first updated.
+   * Initializes the chart by creating the SVG element and setting up the title.
+   */
   protected firstUpdated() {
     this.initializeChart();
   }
 
+  /**
+   * Initializes the chart by creating the SVG element and setting up the title.
+   * This method is called after the component is first updated and can be
+   * overridden by child classes to add additional initialization logic.
+   */
   protected initializeChart() {
     const container = this.shadowRoot?.querySelector('.chart-container');
     if (!container) return;
@@ -109,6 +182,10 @@ export class BaseChart extends LitElement {
     }
   }
 
+  /**
+   * Renders the chart container element.
+   * @returns The rendered HTML template
+   */
   protected render() {
     return html` <div class="chart-container"></div> `;
   }

@@ -3,46 +3,93 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { SVGHelper } from '../utils/svg-helper';
 import { PropertyValues } from 'lit';
 
+/**
+ * Line chart component that extends the base chart functionality.
+ * Displays data as connected lines with optional points and area fills.
+ * Supports multiple data series, animations, and interactive features.
+ *
+ * @example
+ * ```html
+ * <line-chart
+ *   width="600"
+ *   height="400"
+ *   title="Monthly Sales"
+ *   data="[{'x': 'Jan', 'y': 10}, {'x': 'Feb', 'y': 20}, {'x': 'Mar', 'y': 15}]"
+ *   xKey="x"
+ *   yKey="y"
+ *   showPoints="true"
+ *   showArea="true"
+ *   lineWidth="2"
+ * ></line-chart>
+ * ```
+ */
 @customElement('line-chart')
 export class LineChart extends BaseChart {
+  /** Property name in the data objects that represents the X-axis values */
   @property()
   xKey = 'x';
 
+  /** Property name in the data objects that represents the Y-axis values */
   @property()
   yKey = 'y';
 
+  /** Width of the line in pixels */
   @property({ type: Number })
   lineWidth = 2;
 
+  /** Whether to display points at each data point */
   @property({ type: Boolean })
   showPoints = true;
 
+  /** Radius of the points in pixels */
   @property({ type: Number })
   pointRadius = 4;
 
+  /** Whether to fill the area under the line */
   @property({ type: Boolean })
   showArea = false;
 
+  /** Duration of animation in milliseconds */
   @property({ type: Number })
   animationDuration = 800;
 
+  /** Currently hovered point, containing series and point indices */
   @state() private hoveredPoint: { series: number; point: number } | null =
     null;
+
+  /** Flag indicating if this is the first render of the chart */
   @state() private isFirstRender = true;
+
+  /** Array of dataset keys for multi-dataset charts */
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   @state() private datasets: any[] = [];
 
+  /**
+   * Returns the fill color for the area under a line based on its index.
+   * @param index - The index of the line in the dataset
+   * @returns A color string in rgba format with 0.1 opacity
+   */
   private getAreaColor(index: number): string {
     const color = this.colors[index % this.colors.length];
     return `rgba(${color}, 0.1)`;
   }
 
+  /**
+   * Lifecycle method called after the component is first updated.
+   * Processes the data and draws the chart.
+   */
   protected override firstUpdated() {
     super.firstUpdated();
     this.processData();
     this.drawChart();
   }
 
+  /**
+   * Lifecycle method called when component properties change.
+   * Re-processes data and redraws the chart if relevant properties have changed.
+   *
+   * @param changedProperties - Map of changed property names to their old values
+   */
   protected override updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
     if (

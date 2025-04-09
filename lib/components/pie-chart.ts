@@ -2,24 +2,72 @@ import { BaseChart } from './base-chart';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SVGHelper } from '../utils/svg-helper';
 
+/**
+ * Pie chart component that extends the base chart functionality.
+ * Displays data as circular segments with proportional sizes based on values.
+ * Supports donut charts, percentage labels, and interactive features.
+ *
+ * @example
+ * ```html
+ * <pie-chart
+ *   width="600"
+ *   height="400"
+ *   title="Revenue by Category"
+ *   data="[{'label': 'Electronics', 'value': 120}, {'label': 'Clothing', 'value': 80}]"
+ *   valueKey="value"
+ *   labelKey="label"
+ *   innerRadius="50"
+ *   showPercentages="true"
+ * ></pie-chart>
+ * ```
+ */
 @customElement('pie-chart')
 export class PieChart extends BaseChart {
+  /** Property name in the data objects that represents the segment value */
   @property({ type: String }) valueKey = 'value';
+
+  /** Property name in the data objects that represents the segment label */
   @property({ type: String }) labelKey = 'label';
+
+  /**
+   * Inner radius of the pie chart in pixels.
+   * When greater than 0, creates a donut chart.
+   */
   @property({ type: Number }) innerRadius = 0;
+
+  /** Whether to display percentage values on the segments */
   @property({ type: Boolean }) showPercentages = true;
+
+  /** Duration of animation in milliseconds */
   @property({ type: Number }) animationDuration = 300;
 
+  /** Index of the currently hovered segment, or null if none */
   @state() private hoveredSegment: number | null = null;
+
+  /** Sum of all segment values, used for percentage calculations */
   @state() private total: number = 0;
+
+  /** Array of calculated positions for segment labels */
   @state() private labelPositions: { x: number; y: number }[] = [];
+
+  /** Flag indicating if this is the first render of the chart */
   @state() private isFirstRender = true;
 
+  /**
+   * Lifecycle method called after the component is first updated.
+   * Draws the pie chart.
+   */
   protected override firstUpdated() {
     super.firstUpdated();
     this.drawChart();
   }
 
+  /**
+   * Lifecycle method called when component properties change.
+   * Re-draws the chart if the data has changed.
+   *
+   * @param changedProperties - Map of changed property names to their old values
+   */
   protected override updated(changedProperties: Map<string, object>) {
     super.updated(changedProperties);
     if (changedProperties.has('data')) {
@@ -28,6 +76,10 @@ export class PieChart extends BaseChart {
     }
   }
 
+  /**
+   * Draws the pie chart by creating SVG elements for each segment.
+   * Calculates segment angles, positions, and adds labels.
+   */
   private drawChart() {
     if (!this.svgElement || !this.data.length) return;
 
@@ -270,6 +322,12 @@ export class PieChart extends BaseChart {
     }
   }
 
+  /**
+   * Handles mouse hover events on pie segments.
+   * Updates the hovered segment and applies visual effects.
+   *
+   * @param index - The index of the hovered segment
+   */
   private handleSegmentHover(index: number) {
     if (this.hoverEffects) {
       this.hoveredSegment = index;
@@ -277,6 +335,10 @@ export class PieChart extends BaseChart {
     }
   }
 
+  /**
+   * Handles mouse leave events on pie segments.
+   * Clears the hovered segment and removes visual effects.
+   */
   private handleSegmentLeave() {
     if (this.hoverEffects) {
       this.hoveredSegment = null;
@@ -284,6 +346,14 @@ export class PieChart extends BaseChart {
     }
   }
 
+  /**
+   * Converts polar coordinates to cartesian coordinates.
+   * Used for positioning segment labels.
+   *
+   * @param radius - The distance from the center
+   * @param angle - The angle in radians
+   * @returns An object with x and y coordinates
+   */
   private polarToCartesian(radius: number, angle: number) {
     return {
       x: radius * Math.cos(angle - Math.PI / 2),

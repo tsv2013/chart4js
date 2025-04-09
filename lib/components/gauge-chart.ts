@@ -2,32 +2,96 @@ import { BaseChart } from './base-chart';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SVGHelper } from '../utils/svg-helper';
 
+/**
+ * Interface defining the color theme for the gauge chart.
+ * Controls the appearance of various chart elements.
+ */
 interface GaugeTheme {
+  /** Background color of the gauge arc */
   backgroundColor: string;
+  /** Color of the tick marks */
   tickColor: string;
+  /** Color of the value labels */
   labelColor: string;
+  /** Color of the current value display */
   valueColor: string;
+  /** Color of the chart title */
   titleColor: string;
 }
 
+/**
+ * Gauge chart component that extends the base chart functionality.
+ * Displays a single value within a range using a circular gauge/meter visualization.
+ * Supports warning and critical thresholds, animations, and customizable appearance.
+ *
+ * @example
+ * ```html
+ * <gauge-chart
+ *   width="300"
+ *   height="300"
+ *   value="75"
+ *   min="0"
+ *   max="100"
+ *   warningValue="70"
+ *   criticalValue="90"
+ *   title="CPU Usage"
+ *   units="%"
+ *   showTicks="true"
+ *   showLabels="true"
+ * ></gauge-chart>
+ * ```
+ */
 @customElement('gauge-chart')
 export class GaugeChart extends BaseChart {
+  /** Current value to display on the gauge */
   @property({ type: Number }) value = 0;
+
+  /** Minimum value of the gauge range */
   @property({ type: Number }) min = 0;
+
+  /** Maximum value of the gauge range */
   @property({ type: Number }) max = 100;
+
+  /** Value at which to show warning indication */
   @property({ type: Number }) warningValue = 70;
+
+  /** Value at which to show critical indication */
   @property({ type: Number }) criticalValue = 90;
+
+  /** Starting angle of the gauge arc in degrees */
   @property({ type: Number }) startAngle = -90;
+
+  /** Ending angle of the gauge arc in degrees */
   @property({ type: Number }) endAngle = 90;
+
+  /** Thickness of the gauge arc in pixels */
   @property({ type: Number }) arcThickness = 30;
+
+  /** Whether to show tick marks on the gauge */
   @property({ type: Boolean }) showTicks = true;
+
+  /** Whether to show value labels at tick marks */
   @property({ type: Boolean }) showLabels = true;
+
+  /** Number of tick marks to display */
   @property({ type: Number }) numTicks = 5;
+
+  /** Units to display after the value */
   @property({ type: String }) units = '';
+
+  /** Main title of the gauge */
   @property({ type: String }) title = '';
+
+  /** Subtitle displayed below the main title */
   @property({ type: String }) subtitle = '';
+
+  /** Number of decimal places to show in values */
   @property({ type: Number }) precision = 0;
+
+  /** Duration of value change animations in milliseconds */
   @property({ type: Number }) animationDuration = 1000;
+
+  /** Color theme configuration for the gauge */
   private theme: GaugeTheme = {
     backgroundColor: 'rgba(200, 200, 200, 0.2)',
     tickColor: 'rgba(0, 0, 0, 0.6)',
@@ -36,16 +100,31 @@ export class GaugeChart extends BaseChart {
     titleColor: 'rgba(0, 0, 0, 0.85)',
   };
 
+  /** Whether the gauge is currently being hovered */
   @state() private isHovered = false;
+
+  /** Current value during animation */
   @state() private animatedValue = 0;
+
+  /** Whether a value animation is in progress */
   @state() private animationInProgress = false;
 
+  /**
+   * Lifecycle method called after the component is first updated.
+   * Initializes the gauge and starts the initial value animation.
+   */
   protected override firstUpdated() {
     super.firstUpdated();
     this.drawChart();
     this.animateValue();
   }
 
+  /**
+   * Lifecycle method called when component properties change.
+   * Triggers value animation when the value property changes.
+   *
+   * @param changedProperties - Map of changed property names to their old values
+   */
   protected override updated(changedProperties: Map<string, object>) {
     super.updated(changedProperties);
     if (changedProperties.has('value')) {
@@ -53,6 +132,10 @@ export class GaugeChart extends BaseChart {
     }
   }
 
+  /**
+   * Animates the gauge value from its current position to the target value.
+   * Uses cubic easing for smooth animation.
+   */
   private animateValue() {
     if (this.animationInProgress) return;
 
@@ -80,6 +163,10 @@ export class GaugeChart extends BaseChart {
     requestAnimationFrame(animate);
   }
 
+  /**
+   * Draws the gauge chart by creating SVG elements.
+   * Creates the background arc, colored zones, tick marks, and labels.
+   */
   private drawChart() {
     if (!this.svgElement) return;
 
@@ -304,6 +391,12 @@ export class GaugeChart extends BaseChart {
     }
   }
 
+  /**
+   * Converts a value to its corresponding angle on the gauge.
+   *
+   * @param value - The value to convert
+   * @returns The angle in degrees
+   */
   private valueToAngle(value: number): number {
     const normalizedValue = (value - this.min) / (this.max - this.min);
     return (
@@ -311,6 +404,15 @@ export class GaugeChart extends BaseChart {
     );
   }
 
+  /**
+   * Creates an SVG arc path between two angles.
+   *
+   * @param outerRadius - The outer radius of the arc
+   * @param innerRadius - The inner radius of the arc
+   * @param startAngle - The starting angle in degrees
+   * @param endAngle - The ending angle in degrees
+   * @returns An SVG path string for the arc
+   */
   private createArc(
     outerRadius: number,
     innerRadius: number,
@@ -350,6 +452,13 @@ export class GaugeChart extends BaseChart {
     ].join(' ');
   }
 
+  /**
+   * Converts polar coordinates to cartesian coordinates.
+   *
+   * @param radius - The distance from the center
+   * @param angle - The angle in degrees
+   * @returns An object with x and y coordinates
+   */
   private polarToCartesian(radius: number, angle: number) {
     const angleInRadians = (angle - 90) * (Math.PI / 180);
     return {
@@ -358,6 +467,12 @@ export class GaugeChart extends BaseChart {
     };
   }
 
+  /**
+   * Handles hover events on the gauge.
+   * Updates visual state for hover effects.
+   *
+   * @param isHovered - Whether the gauge is being hovered
+   */
   private handleHover(isHovered: boolean) {
     this.isHovered = isHovered;
     this.drawChart();
