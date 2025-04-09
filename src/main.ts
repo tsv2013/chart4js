@@ -42,7 +42,7 @@ const pieData = [
   { label: 'Sales', value: 500 },
   { label: 'Development', value: 400 },
   { label: 'Support', value: 200 },
-  { label: 'Administration', value: 100 },
+  { label: 'Administration', value: 10 },
 ];
 
 const lineData = [
@@ -233,7 +233,7 @@ export class AppRoot extends LitElement {
           </div>
         </div>
 
-        <h2>Pie Chart Example</h2>
+        <h2>Pie Chart Examples</h2>
         <div class="chart-row">
           <div class="chart-container">
             <h3>Interactive Pie Chart</h3>
@@ -242,6 +242,16 @@ export class AppRoot extends LitElement {
               .showValues=${true}
               .showLegend=${true}
               .hoverEffects=${true}
+            ></pie-chart>
+          </div>
+          <div class="chart-container">
+            <h3>Interactive Doughnut Chart</h3>
+            <pie-chart
+              .data=${pieData}
+              .showValues=${true}
+              .showLegend=${true}
+              .hoverEffects=${true}
+              .innerRadius=${75}
             ></pie-chart>
           </div>
         </div>

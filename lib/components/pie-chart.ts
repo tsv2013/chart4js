@@ -8,19 +8,30 @@ export class PieChart extends BaseChart {
   @property({ type: String }) labelKey = 'label';
   @property({ type: Number }) innerRadius = 0;
   @property({ type: Boolean }) showPercentages = true;
+  @property({ type: Number }) animationDuration = 300;
 
   @state() private hoveredSegment: number | null = null;
   @state() private total: number = 0;
+  @state() private labelPositions: { x: number; y: number }[] = [];
+  @state() private animationInProgress = false;
+  @state() private isFirstRender = true;
 
   protected override firstUpdated() {
     super.firstUpdated();
     this.drawChart();
   }
 
+  protected override updated(changedProperties: Map<string, object>) {
+    super.updated(changedProperties);
+    if (changedProperties.has('data')) {
+      this.isFirstRender = true;
+      this.drawChart();
+    }
+  }
+
   private drawChart() {
     if (!this.svgElement || !this.data.length) return;
 
-    // Clear previous chart
     this.svgElement.innerHTML = '';
 
     const width = this.width - this.margin.left - this.margin.right;
@@ -28,7 +39,6 @@ export class PieChart extends BaseChart {
     const radius = Math.min(width, height) / 2;
     const centerX = this.width / 2;
     const centerY = this.height / 2;
-
     // Create chart group
     const g = SVGHelper.createGroup(`translate(${centerX},${centerY})`);
     this.svgElement.appendChild(g);
@@ -36,6 +46,9 @@ export class PieChart extends BaseChart {
     // Calculate total and angles
     this.total = this.data.reduce((sum, d) => sum + d[this.valueKey], 0);
     let startAngle = 0;
+
+    // Reset label positions array
+    this.labelPositions = [];
 
     // Draw pie segments
     this.data.forEach((d, i) => {
@@ -125,6 +138,16 @@ export class PieChart extends BaseChart {
         strokeWidth: '1',
       });
 
+      // Add animation styles
+      path.style.transition = `transform ${this.animationDuration}ms ease-out`;
+      path.style.transformOrigin = '0 0';
+
+      // Initial animation only on first render
+      if (this.isFirstRender) {
+        path.style.transform = 'scale(0)';
+        path.style.opacity = '0';
+      }
+
       // Add hover events
       if (this.hoverEffects) {
         path.addEventListener('mouseenter', () => this.handleSegmentHover(i));
@@ -133,57 +156,101 @@ export class PieChart extends BaseChart {
 
       g.appendChild(path);
 
+      // Trigger initial animation after a small delay
+      if (this.isFirstRender) {
+        requestAnimationFrame(() => {
+          path.style.transform = 'scale(1)';
+          path.style.opacity = '1';
+        });
+      }
+
       // Add label
       const labelAngle = startAngle + angle / 2;
       const labelRadius = radius * 0.7;
       const labelPos = this.polarToCartesian(labelRadius, labelAngle);
 
-      // Only show label if segment is large enough
-      if (angle > 0.1) {
+      // Store the base label position for animation
+      this.labelPositions[i] = { x: labelPos.x, y: labelPos.y };
+
+      // Only show labels if segment is large enough or if it's hovered
+      if (angle > 0.1 || isHovered) {
+        // Create a group for all labels
+        const labelGroup = SVGHelper.createGroup(
+          `translate(${labelPos.x},${labelPos.y})`,
+        );
+
+        // Add main label
         const text = SVGHelper.createText(d[this.labelKey], {
-          x: labelPos.x,
-          y: labelPos.y,
+          x: 0,
+          y: 0,
           anchor: 'middle',
           dy: '.35em',
-          fontSize: '12px',
-          fill: this.getBorderColor(i),
+          fontSize: isHovered ? '16px' : '12px',
         });
-        g.appendChild(text);
-      }
+        text.style.fill = this.getBorderColor(i);
+        labelGroup.appendChild(text);
 
-      // Add value label if enabled
-      if (this.showValues && angle > 0.2) {
-        const valueLabelPos = this.polarToCartesian(
-          labelRadius * 0.8,
-          labelAngle,
-        );
-        const valueText = SVGHelper.createText(value.toString(), {
-          x: valueLabelPos.x,
-          y: valueLabelPos.y + 15,
-          anchor: 'middle',
-          dy: '.35em',
-          fontSize: '10px',
-          fill: this.getBorderColor(i),
-        });
-        g.appendChild(valueText);
-      }
+        // Add value label if enabled
+        if (this.showValues && (angle > 0.2 || isHovered)) {
+          const valueText = SVGHelper.createText(value.toString(), {
+            x: 0,
+            y: 15,
+            anchor: 'middle',
+            dy: '.35em',
+            fontSize: isHovered ? '14px' : '10px',
+          });
+          valueText.style.fill = this.getBorderColor(i);
+          labelGroup.appendChild(valueText);
+        }
 
-      // Add percentage if enabled
-      if (this.showPercentages && angle > 0.2) {
-        const percentage = ((value / this.total) * 100).toFixed(1);
-        const percentageLabelPos = this.polarToCartesian(
-          labelRadius * 0.9,
-          labelAngle,
-        );
-        const percentageText = SVGHelper.createText(`${percentage}%`, {
-          x: percentageLabelPos.x,
-          y: percentageLabelPos.y + 30,
-          anchor: 'middle',
-          dy: '.35em',
-          fontSize: '10px',
-          fill: this.getBorderColor(i),
-        });
-        g.appendChild(percentageText);
+        // Add percentage if enabled
+        if (this.showPercentages && (angle > 0.2 || isHovered)) {
+          const percentage = ((value / this.total) * 100).toFixed(1);
+          const percentageText = SVGHelper.createText(`${percentage}%`, {
+            x: 0,
+            y: 30,
+            anchor: 'middle',
+            dy: '.35em',
+            fontSize: isHovered ? '14px' : '10px',
+          });
+          percentageText.style.fill = this.getBorderColor(i);
+          labelGroup.appendChild(percentageText);
+        }
+
+        // Calculate the direction vector from center to the label position
+        const dirX = labelPos.x;
+        const dirY = labelPos.y;
+        const length = Math.sqrt(dirX * dirX + dirY * dirY);
+
+        // Normalize the direction vector
+        const normalizedDirX = dirX / length;
+        const normalizedDirY = dirY / length;
+
+        // Calculate the offset for the label based on hover state
+        const offsetFactor = isHovered ? 0.5 : 0.1;
+        const newX = labelPos.x + normalizedDirX * radius * offsetFactor;
+        const newY = labelPos.y + normalizedDirY * radius * offsetFactor;
+
+        // Update the transform attribute to position the label group
+        labelGroup.setAttribute('transform', `translate(${newX},${newY})`);
+
+        // Add transition for smooth animation
+        labelGroup.style.transition = `transform ${this.animationDuration}ms ease-out`;
+
+        // Add start animation for labels
+        if (this.isFirstRender) {
+          labelGroup.style.opacity = '0';
+          labelGroup.style.transition = `transform ${this.animationDuration}ms ease-out, opacity ${this.animationDuration}ms ease-out`;
+        }
+
+        g.appendChild(labelGroup);
+
+        // Trigger label animation after a small delay
+        if (this.isFirstRender) {
+          requestAnimationFrame(() => {
+            labelGroup.style.opacity = '1';
+          });
+        }
       }
 
       startAngle = endAngle;
@@ -214,13 +281,20 @@ export class PieChart extends BaseChart {
           x: 20,
           y: 12,
           fontSize: '12px',
-          fill: this.getBorderColor(i),
         });
+        text.style.fill = this.getBorderColor(i);
         legendItem.appendChild(text);
 
         legend.appendChild(legendItem);
       });
       g.appendChild(legend);
+    }
+
+    // Set isFirstRender to false after initial animation
+    if (this.isFirstRender) {
+      setTimeout(() => {
+        this.isFirstRender = false;
+      }, this.animationDuration);
     }
   }
 

@@ -23,8 +23,12 @@ export class LineChart extends BaseChart {
   @property({ type: Boolean })
   showArea = false;
 
+  @property({ type: Number })
+  animationDuration = 800; // Animation duration in milliseconds
+
   @state() private hoveredPoint: { series: number; point: number } | null =
     null;
+  @state() private isFirstRender = true;
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   @state() private datasets: any[] = [];
 
@@ -49,6 +53,7 @@ export class LineChart extends BaseChart {
       changedProperties.has('pointRadius') ||
       changedProperties.has('showArea')
     ) {
+      this.isFirstRender = true; // Reset first render flag when data changes
       this.processData();
       this.drawChart();
     }
@@ -178,7 +183,23 @@ export class LineChart extends BaseChart {
           fill: this.getAreaColor(seriesIndex),
           stroke: 'none',
         });
+
+        // Add transition for smooth animation only on first render
+        if (this.isFirstRender) {
+          area.style.transition = `opacity ${this.animationDuration}ms ease-out`;
+          area.style.opacity = '0'; // Start invisible for animation
+        } else {
+          area.style.opacity = '1'; // Immediately visible when not first render
+        }
+
         g.appendChild(area);
+
+        // Trigger animation after a small delay only on first render
+        if (this.isFirstRender) {
+          setTimeout(() => {
+            area.style.opacity = '1';
+          }, 50);
+        }
       }
 
       // Create path for the line
@@ -192,7 +213,22 @@ export class LineChart extends BaseChart {
         stroke: this.getBorderColor(seriesIndex),
         strokeWidth: this.lineWidth.toString(),
       });
+
+      // Add transition for smooth animation only on first render
+      if (this.isFirstRender) {
+        path.style.transition = `stroke-dashoffset ${this.animationDuration}ms ease-out`;
+        path.style.strokeDasharray = path.getTotalLength().toString();
+        path.style.strokeDashoffset = path.getTotalLength().toString();
+      }
+
       g.appendChild(path);
+
+      // Trigger animation after a small delay only on first render
+      if (this.isFirstRender) {
+        setTimeout(() => {
+          path.style.strokeDashoffset = '0';
+        }, 50);
+      }
 
       // Add points if enabled
       if (this.showPoints) {
@@ -212,19 +248,37 @@ export class LineChart extends BaseChart {
             strokeWidth: '1',
           });
 
+          // Add transition for smooth animation only on first render
+          if (this.isFirstRender) {
+            circle.style.transition = `opacity ${this.animationDuration}ms ease-out, r ${this.animationDuration}ms ease-out`;
+            circle.style.opacity = '0'; // Start invisible for animation
+          } else {
+            circle.style.opacity = '1'; // Immediately visible when not first render
+          }
+
           // Add hover events
           if (this.hoverEffects) {
             circle.addEventListener('mouseenter', () => {
               this.hoveredPoint = { series: seriesIndex, point: pointIndex };
-              this.drawChart();
+              this.updatePointStyles();
             });
             circle.addEventListener('mouseleave', () => {
               this.hoveredPoint = null;
-              this.drawChart();
+              this.updatePointStyles();
             });
           }
 
           g.appendChild(circle);
+
+          // Trigger animation after a small delay only on first render
+          if (this.isFirstRender) {
+            setTimeout(
+              () => {
+                circle.style.opacity = '1';
+              },
+              this.animationDuration / 2 + pointIndex * 50,
+            ); // Stagger the point animations
+          }
 
           // Add value labels if enabled and point is hovered
           if (this.showValues && isHovered) {
@@ -238,7 +292,17 @@ export class LineChart extends BaseChart {
                 fill: this.getBorderColor(seriesIndex),
               },
             );
+
+            // Add transition for smooth animation
+            text.style.transition = `opacity 0.2s ease-out`;
+            text.style.opacity = '0'; // Start invisible for animation
+
             g.appendChild(text);
+
+            // Trigger animation after a small delay
+            setTimeout(() => {
+              text.style.opacity = '1';
+            }, 50);
           }
         });
       }
@@ -290,5 +354,82 @@ export class LineChart extends BaseChart {
       });
       g.appendChild(legend);
     }
+
+    // After drawing is complete, set isFirstRender to false
+    this.isFirstRender = false;
+  }
+
+  // New method to update point styles without redrawing the entire chart
+  private updatePointStyles() {
+    if (!this.renderRoot) return;
+
+    const svg = this.renderRoot.querySelector('svg');
+    if (!svg) return;
+
+    // Find all points and update their styles based on hover state
+    const circles = svg.querySelectorAll('circle');
+    circles.forEach((circle, i) => {
+      // Calculate which series and point this circle represents
+      const seriesIndex = Math.floor(i / this.datasets[0].data.length);
+      const pointIndex = i % this.datasets[0].data.length;
+
+      const isHovered =
+        this.hoveredPoint?.series === seriesIndex &&
+        this.hoveredPoint?.point === pointIndex;
+
+      if (isHovered) {
+        // Apply hover style
+        circle.setAttribute('r', (this.pointRadius * 1.5).toString());
+        circle.setAttribute('fill', this.getHoverColor(seriesIndex));
+
+        // Add value label if enabled
+        if (this.showValues) {
+          // Check if label already exists
+          const existingLabel = svg.querySelector(
+            `text[data-point="${seriesIndex}-${pointIndex}"]`,
+          );
+          if (!existingLabel) {
+            const cx = parseFloat(circle.getAttribute('cx') || '0');
+            const cy = parseFloat(circle.getAttribute('cy') || '0');
+            const value =
+              this.datasets[seriesIndex].data[pointIndex][this.yKey];
+
+            const text = SVGHelper.createText(value.toFixed(1), {
+              x: cx,
+              y: cy - 15,
+              anchor: 'middle',
+              fontSize: '12px',
+              fill: this.getBorderColor(seriesIndex),
+            });
+
+            // Add data attribute to identify this label
+            text.setAttribute('data-point', `${seriesIndex}-${pointIndex}`);
+
+            // Add transition for smooth animation
+            text.style.transition = `opacity 0.2s ease-out`;
+            text.style.opacity = '0'; // Start invisible for animation
+
+            svg.querySelector('g')?.appendChild(text);
+
+            // Trigger animation after a small delay
+            setTimeout(() => {
+              text.style.opacity = '1';
+            }, 50);
+          }
+        }
+      } else {
+        // Apply normal style
+        circle.setAttribute('r', this.pointRadius.toString());
+        circle.setAttribute('fill', this.getColor(seriesIndex));
+
+        // Remove value label if it exists
+        const label = svg.querySelector(
+          `text[data-point="${seriesIndex}-${pointIndex}"]`,
+        );
+        if (label) {
+          label.remove();
+        }
+      }
+    });
   }
 }

@@ -10,8 +10,10 @@ export class BarChart extends BaseChart {
   @property({ type: String }) color = '#1f77b4';
   @property({ type: Boolean }) showButtons = true;
   @property({ type: Number }) limit = 10;
+  @property({ type: Number }) animationDuration = 800; // Animation duration in milliseconds
 
   @state() private offset = 0;
+  @state() private isFirstRender = true;
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   @state() private processedData: any[] = [];
   /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -31,6 +33,9 @@ export class BarChart extends BaseChart {
 
   private processData() {
     if (!this.data.length) return;
+
+    // Reset first render flag when data changes
+    this.isFirstRender = true;
 
     // Check if we have multiple datasets
     if (this.hasMultipleDatasets) {
@@ -106,15 +111,57 @@ export class BarChart extends BaseChart {
   private handleBarHover(index: number) {
     if (this.hoverEffects) {
       this.hoveredBar = index;
-      this.drawChart();
+      // Instead of redrawing the entire chart, just update the bar colors
+      this.updateBarColors();
     }
   }
 
   private handleBarLeave() {
     if (this.hoverEffects) {
       this.hoveredBar = null;
-      this.drawChart();
+      // Instead of redrawing the entire chart, just update the bar colors
+      this.updateBarColors();
     }
+  }
+
+  // New method to update bar colors without redrawing the entire chart
+  private updateBarColors() {
+    if (!this.renderRoot) return;
+
+    const svg = this.renderRoot.querySelector('svg');
+    if (!svg) return;
+
+    // Find all bars and update their colors based on hover state
+    const bars = svg.querySelectorAll('rect');
+    bars.forEach((bar, i) => {
+      const barIndex = Math.floor(
+        i / (this.hasMultipleDatasets ? this.datasets.length : 1),
+      );
+
+      if (this.hoveredBar === barIndex) {
+        // Apply hover color
+        if (this.hasMultipleDatasets) {
+          const datasetIndex = i % this.datasets.length;
+          bar.setAttribute(
+            'fill',
+            this.processedData[barIndex].hoverColors[datasetIndex],
+          );
+        } else {
+          bar.setAttribute('fill', this.processedData[barIndex].hoverColor);
+        }
+      } else {
+        // Apply normal color
+        if (this.hasMultipleDatasets) {
+          const datasetIndex = i % this.datasets.length;
+          bar.setAttribute(
+            'fill',
+            this.processedData[barIndex].colors[datasetIndex],
+          );
+        } else {
+          bar.setAttribute('fill', this.processedData[barIndex].color);
+        }
+      }
+    });
   }
 
   private drawChart() {
@@ -209,9 +256,9 @@ export class BarChart extends BaseChart {
           // Create the bar
           const bar = SVGHelper.createRect({
             x: barX,
-            y: height - barHeight, // Fixed: Correct bar position
+            y: height, // Start from the bottom (height) for animation
             width: singleBarWidth,
-            height: barHeight,
+            height: 0, // Start with height 0 for animation
             fill:
               this.hoveredBar === index
                 ? item.hoverColors[datasetIndex]
@@ -220,19 +267,26 @@ export class BarChart extends BaseChart {
             strokeWidth: '1',
           });
 
+          // Add transition for smooth animation only on first render
+          if (this.isFirstRender) {
+            bar.style.transition = `height ${this.animationDuration}ms ease-out, y ${this.animationDuration}ms ease-out`;
+          }
+
           // Add hover effects
           if (this.hoverEffects) {
-            bar.addEventListener('mouseenter', () => {
-              this.hoveredBar = index;
-              this.drawChart();
-            });
-            bar.addEventListener('mouseleave', () => {
-              this.hoveredBar = null;
-              this.drawChart();
-            });
+            bar.addEventListener('mouseenter', () =>
+              this.handleBarHover(index),
+            );
+            bar.addEventListener('mouseleave', () => this.handleBarLeave());
           }
 
           g.appendChild(bar);
+
+          // Trigger animation after a small delay
+          setTimeout(() => {
+            bar.setAttribute('height', barHeight.toString());
+            bar.setAttribute('y', (height - barHeight).toString());
+          }, 50);
 
           // Add value labels if enabled
           if (this.showValues) {
@@ -241,7 +295,23 @@ export class BarChart extends BaseChart {
               y: height - barHeight - 5, // Fixed: Correct label position
               anchor: 'middle',
             });
+
+            // Add transition for smooth animation only on first render
+            if (this.isFirstRender) {
+              text.style.transition = `opacity ${this.animationDuration}ms ease-out`;
+              text.style.opacity = '0'; // Start invisible for animation
+            } else {
+              text.style.opacity = '1'; // Immediately visible when not first render
+            }
+
             g.appendChild(text);
+
+            // Trigger animation after a small delay only on first render
+            if (this.isFirstRender) {
+              setTimeout(() => {
+                text.style.opacity = '1';
+              }, this.animationDuration / 2);
+            }
           }
         });
 
@@ -269,27 +339,32 @@ export class BarChart extends BaseChart {
         // Create the bar
         const bar = SVGHelper.createRect({
           x,
-          y: height - barHeight, // Fixed: Correct bar position
+          y: height, // Start from the bottom (height) for animation
           width: barWidth,
-          height: barHeight,
+          height: 0, // Start with height 0 for animation
           fill: this.hoveredBar === index ? item.hoverColor : item.color,
           stroke: this.getBorderColor(index),
           strokeWidth: '1',
         });
 
+        // Add transition for smooth animation only on first render
+        if (this.isFirstRender) {
+          bar.style.transition = `height ${this.animationDuration}ms ease-out, y ${this.animationDuration}ms ease-out`;
+        }
+
         // Add hover effects
         if (this.hoverEffects) {
-          bar.addEventListener('mouseenter', () => {
-            this.hoveredBar = index;
-            this.drawChart();
-          });
-          bar.addEventListener('mouseleave', () => {
-            this.hoveredBar = null;
-            this.drawChart();
-          });
+          bar.addEventListener('mouseenter', () => this.handleBarHover(index));
+          bar.addEventListener('mouseleave', () => this.handleBarLeave());
         }
 
         g.appendChild(bar);
+
+        // Trigger animation after a small delay
+        setTimeout(() => {
+          bar.setAttribute('height', barHeight.toString());
+          bar.setAttribute('y', (height - barHeight).toString());
+        }, 50);
 
         // Add value labels if enabled
         if (this.showValues) {
@@ -298,7 +373,23 @@ export class BarChart extends BaseChart {
             y: height - barHeight - 5, // Fixed: Correct label position
             anchor: 'middle',
           });
+
+          // Add transition for smooth animation only on first render
+          if (this.isFirstRender) {
+            text.style.transition = `opacity ${this.animationDuration}ms ease-out`;
+            text.style.opacity = '0'; // Start invisible for animation
+          } else {
+            text.style.opacity = '1'; // Immediately visible when not first render
+          }
+
           g.appendChild(text);
+
+          // Trigger animation after a small delay only on first render
+          if (this.isFirstRender) {
+            setTimeout(() => {
+              text.style.opacity = '1';
+            }, this.animationDuration / 2);
+          }
         }
 
         // Add X axis labels
@@ -310,6 +401,9 @@ export class BarChart extends BaseChart {
         xAxis.appendChild(text);
       });
     }
+
+    // After drawing is complete, set isFirstRender to false
+    this.isFirstRender = false;
   }
 
   private renderLegend(g: SVGGElement, width: number) {
