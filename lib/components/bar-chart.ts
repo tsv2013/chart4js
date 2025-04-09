@@ -19,6 +19,7 @@ import { SVGHelper } from '../utils/svg-helper';
  *   yKey="value"
  *   showLegend="true"
  *   showValues="true"
+ *   animationEnabled="true"
  * ></bar-chart>
  * ```
  */
@@ -288,7 +289,7 @@ export class BarChart extends BaseChart {
             strokeWidth: '1',
           });
 
-          if (this.isFirstRender) {
+          if (this.isAnimationEnabled) {
             bar.style.transition = `height ${this.animationDuration}ms ease-out, y ${this.animationDuration}ms ease-out`;
           }
 
@@ -313,7 +314,7 @@ export class BarChart extends BaseChart {
               anchor: 'middle',
             });
 
-            if (this.isFirstRender) {
+            if (this.isAnimationEnabled) {
               text.style.transition = `opacity ${this.animationDuration}ms ease-out`;
               text.style.opacity = '0';
             } else {
@@ -322,7 +323,7 @@ export class BarChart extends BaseChart {
 
             g.appendChild(text);
 
-            if (this.isFirstRender) {
+            if (this.isAnimationEnabled) {
               setTimeout(() => {
                 text.style.opacity = '1';
               }, this.animationDuration / 2);
@@ -358,7 +359,7 @@ export class BarChart extends BaseChart {
           strokeWidth: '1',
         });
 
-        if (this.isFirstRender) {
+        if (this.isAnimationEnabled) {
           bar.style.transition = `height ${this.animationDuration}ms ease-out, y ${this.animationDuration}ms ease-out`;
         }
 
@@ -381,7 +382,7 @@ export class BarChart extends BaseChart {
             anchor: 'middle',
           });
 
-          if (this.isFirstRender) {
+          if (this.isAnimationEnabled) {
             text.style.transition = `opacity ${this.animationDuration}ms ease-out`;
             text.style.opacity = '0';
           } else {
@@ -390,7 +391,7 @@ export class BarChart extends BaseChart {
 
           g.appendChild(text);
 
-          if (this.isFirstRender) {
+          if (this.isAnimationEnabled) {
             setTimeout(() => {
               text.style.opacity = '1';
             }, this.animationDuration / 2);

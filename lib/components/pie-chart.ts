@@ -18,6 +18,7 @@ import { SVGHelper } from '../utils/svg-helper';
  *   labelKey="label"
  *   innerRadius="50"
  *   showPercentages="true"
+ *   animationEnabled="true"
  * ></pie-chart>
  * ```
  */
@@ -179,7 +180,7 @@ export class PieChart extends BaseChart {
       path.style.transition = `transform ${this.animationDuration}ms ease-out`;
       path.style.transformOrigin = '0 0';
 
-      if (this.isFirstRender) {
+      if (this.isAnimationEnabled) {
         path.style.transform = 'scale(0)';
         path.style.opacity = '0';
       }
@@ -191,7 +192,7 @@ export class PieChart extends BaseChart {
 
       g.appendChild(path);
 
-      if (this.isFirstRender) {
+      if (this.isAnimationEnabled) {
         requestAnimationFrame(() => {
           path.style.transform = 'scale(1)';
           path.style.opacity = '1';
@@ -259,14 +260,14 @@ export class PieChart extends BaseChart {
 
         labelGroup.style.transition = `transform ${this.animationDuration}ms ease-out`;
 
-        if (this.isFirstRender) {
+        if (this.isAnimationEnabled) {
           labelGroup.style.opacity = '0';
           labelGroup.style.transition = `transform ${this.animationDuration}ms ease-out, opacity ${this.animationDuration}ms ease-out`;
         }
 
         g.appendChild(labelGroup);
 
-        if (this.isFirstRender) {
+        if (this.isAnimationEnabled) {
           requestAnimationFrame(() => {
             labelGroup.style.opacity = '1';
           });

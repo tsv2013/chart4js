@@ -20,6 +20,7 @@ import { PropertyValues } from 'lit';
  *   showPoints="true"
  *   showArea="true"
  *   lineWidth="2"
+ *   animationEnabled="true"
  * ></line-chart>
  * ```
  */
@@ -240,7 +241,7 @@ export class LineChart extends BaseChart {
         strokeWidth: this.lineWidth.toString(),
       });
 
-      if (this.isFirstRender) {
+      if (this.isAnimationEnabled) {
         path.style.transition = `stroke-dashoffset ${this.animationDuration}ms ease-out`;
         path.style.strokeDasharray = path.getTotalLength().toString();
         path.style.strokeDashoffset = path.getTotalLength().toString();
@@ -248,7 +249,7 @@ export class LineChart extends BaseChart {
 
       g.appendChild(path);
 
-      if (this.isFirstRender) {
+      if (this.isAnimationEnabled) {
         setTimeout(() => {
           path.style.strokeDashoffset = '0';
         }, 50);
@@ -271,7 +272,7 @@ export class LineChart extends BaseChart {
             strokeWidth: '1',
           });
 
-          if (this.isFirstRender) {
+          if (this.isAnimationEnabled) {
             circle.style.transition = `opacity ${this.animationDuration}ms ease-out, r ${this.animationDuration}ms ease-out`;
             circle.style.opacity = '0';
           } else {
@@ -291,7 +292,7 @@ export class LineChart extends BaseChart {
 
           g.appendChild(circle);
 
-          if (this.isFirstRender) {
+          if (this.isAnimationEnabled) {
             setTimeout(
               () => {
                 circle.style.opacity = '1';
@@ -317,9 +318,13 @@ export class LineChart extends BaseChart {
 
             g.appendChild(text);
 
-            setTimeout(() => {
+            if (this.animationEnabled) {
+              setTimeout(() => {
+                text.style.opacity = '1';
+              }, 50);
+            } else {
               text.style.opacity = '1';
-            }, 50);
+            }
           }
         });
       }
@@ -416,9 +421,13 @@ export class LineChart extends BaseChart {
 
             svg.querySelector('g')?.appendChild(text);
 
-            setTimeout(() => {
+            if (this.animationEnabled) {
+              setTimeout(() => {
+                text.style.opacity = '1';
+              }, 50);
+            } else {
               text.style.opacity = '1';
-            }, 50);
+            }
           }
         }
       } else {

@@ -21,23 +21,22 @@ interface GaugeTheme {
 
 /**
  * Gauge chart component that extends the base chart functionality.
- * Displays a single value within a range using a circular gauge/meter visualization.
- * Supports warning and critical thresholds, animations, and customizable appearance.
+ * Displays a single value on a semi-circular gauge with customizable
+ * ranges, colors, and interactive features.
  *
  * @example
  * ```html
  * <gauge-chart
- *   width="300"
- *   height="300"
+ *   width="600"
+ *   height="400"
+ *   title="CPU Usage"
  *   value="75"
  *   min="0"
  *   max="100"
  *   warningValue="70"
  *   criticalValue="90"
- *   title="CPU Usage"
  *   units="%"
- *   showTicks="true"
- *   showLabels="true"
+ *   animationEnabled="true"
  * ></gauge-chart>
  * ```
  */
@@ -135,6 +134,11 @@ export class GaugeChart extends BaseChart {
    */
   private animateValue() {
     if (this.animationInProgress) return;
+    if (!this.animationEnabled) {
+      this.animatedValue = this.value;
+      this.drawChart();
+      return;
+    }
 
     this.animationInProgress = true;
     const startValue = this.animatedValue;

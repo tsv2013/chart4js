@@ -15,6 +15,7 @@ import { SVGHelper } from '../utils/svg-helper';
  *   title="My Chart"
  *   data="[{'category': 'A', 'value': 10}, {'category': 'B', 'value': 20}]"
  *   showLegend="true"
+ *   animationEnabled="true"
  * ></base-chart>
  * ```
  */
@@ -96,6 +97,9 @@ export class BaseChart extends LitElement {
   /** Duration of animation in milliseconds */
   @property({ type: Number }) animationDuration = 800;
 
+  /** Whether animations are enabled */
+  @property({ type: Boolean }) animationEnabled = true;
+
   /** Flag indicating if this is the first render of the chart */
   @state() protected isFirstRender = true;
 
@@ -156,6 +160,10 @@ export class BaseChart extends LitElement {
    */
   protected firstUpdated() {
     this.initializeChart();
+  }
+
+  protected get isAnimationEnabled() {
+    return this.animationEnabled && this.isFirstRender;
   }
 
   /**
