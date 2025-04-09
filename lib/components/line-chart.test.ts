@@ -108,7 +108,7 @@ describe.skip('LineChart', () => {
     const newColor = 'rgba(7, 171, 160, 1)';
     const newWidth = 4;
 
-    chart.color = newColor;
+    chart.colors = [newColor];
     chart.lineWidth = newWidth;
     await chart.updateComplete;
 

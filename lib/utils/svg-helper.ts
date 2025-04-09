@@ -32,6 +32,9 @@ export class SVGHelper {
       transform?: string;
       dy?: string;
       fontSize?: string;
+      fill?: string;
+      stroke?: string;
+      strokeWidth?: string;
     },
   ): SVGTextElement {
     const textElement = document.createElementNS(this.SVG_NS, 'text');
@@ -49,6 +52,15 @@ export class SVGHelper {
     if (options.fontSize) {
       textElement.style.fontSize = options.fontSize;
     }
+    if (options.fill) {
+      textElement.style.fill = options.fill;
+    }
+    if (options.stroke) {
+      textElement.style.stroke = options.stroke;
+    }
+    if (options.strokeWidth) {
+      textElement.setAttribute('stroke-width', options.strokeWidth);
+    }
     textElement.textContent = text;
     return textElement;
   }
@@ -59,6 +71,7 @@ export class SVGHelper {
     x2: number;
     y2: number;
     stroke?: string;
+    strokeWidth?: string;
   }): SVGLineElement {
     const line = document.createElementNS(this.SVG_NS, 'line');
     line.setAttribute('x1', options.x1.toString());
@@ -67,6 +80,9 @@ export class SVGHelper {
     line.setAttribute('y2', options.y2.toString());
     if (options.stroke) {
       line.setAttribute('stroke', options.stroke);
+    }
+    if (options.strokeWidth) {
+      line.setAttribute('stroke-width', options.strokeWidth);
     }
     return line;
   }
@@ -122,6 +138,8 @@ export class SVGHelper {
     cy: number;
     r: number;
     fill?: string;
+    stroke?: string;
+    strokeWidth?: string;
   }): SVGCircleElement {
     const circle = document.createElementNS(this.SVG_NS, 'circle');
     circle.setAttribute('cx', options.cx.toString());
@@ -129,6 +147,12 @@ export class SVGHelper {
     circle.setAttribute('r', options.r.toString());
     if (options.fill) {
       circle.setAttribute('fill', options.fill);
+    }
+    if (options.stroke) {
+      circle.setAttribute('stroke', options.stroke);
+    }
+    if (options.strokeWidth) {
+      circle.setAttribute('stroke-width', options.strokeWidth);
     }
     return circle;
   }

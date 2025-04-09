@@ -370,14 +370,10 @@ export class GanttChart extends LitElement {
   @state() private _mouseDownPageX = 0;
 
   /** Current horizontal scroll position */
-  @state() private _scrollLeft = 0;
+  // @state() private _scrollLeft = 0;
 
   /** Array of connector points for dependency lines */
   @state() private _connectors: ConnectorPoints[] = [];
-
-  /** Map of item links indexed by item ID */
-  private _itemLinks: { [key: string]: { index: number; links: GanttLink[] } } =
-    {};
 
   /**
    * Creates a new GanttChart instance.
@@ -495,22 +491,22 @@ export class GanttChart extends LitElement {
   /**
    * Scrolls the timeline left by one viewport width.
    */
-  private _moveLeft() {
-    this.shadowRoot?.querySelector('.gantt-content')?.scrollBy({
-      left: -100,
-      behavior: 'smooth',
-    });
-  }
+  // private _moveLeft() {
+  //   this.shadowRoot?.querySelector('.gantt-content')?.scrollBy({
+  //     left: -100,
+  //     behavior: 'smooth',
+  //   });
+  // }
 
   /**
    * Scrolls the timeline right by one viewport width.
    */
-  private _moveRight() {
-    this.shadowRoot?.querySelector('.gantt-content')?.scrollBy({
-      left: 100,
-      behavior: 'smooth',
-    });
-  }
+  // private _moveRight() {
+  //   this.shadowRoot?.querySelector('.gantt-content')?.scrollBy({
+  //     left: 100,
+  //     behavior: 'smooth',
+  //   });
+  // }
 
   /**
    * Decreases the zoom level of the timeline.
@@ -572,9 +568,10 @@ export class GanttChart extends LitElement {
    * Handles scroll events on the timeline.
    * @param e - Scroll event
    */
-  private _handleScroll(e: Event) {
-    const target = e.target as HTMLElement;
-    this._scrollLeft = target.scrollLeft;
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  private _handleScroll(_e: Event) {
+    // const target = e.target as HTMLElement;
+    // this._scrollLeft = target.scrollLeft;
   }
 
   /**

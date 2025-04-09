@@ -193,7 +193,7 @@ export class LineChart extends BaseChart {
     }
 
     this.datasets.forEach((dataset, seriesIndex) => {
-      const points = dataset.data.map((d, i) => ({
+      const points = dataset.data.map((d: any, i: number) => ({
         x: xScale(d[this.xKey]),
         y: height - yScale(d[this.yKey]),
         original: d,
@@ -203,7 +203,7 @@ export class LineChart extends BaseChart {
       if (this.showArea) {
         const areaData = [
           `M ${points[0].x} ${height}`,
-          ...points.map((p) => `L ${p.x} ${p.y}`),
+          ...points.map((p: { x: number; y: number }) => `L ${p.x} ${p.y}`),
           `L ${points[points.length - 1].x} ${height}`,
           'Z',
         ].join(' ');
@@ -231,7 +231,10 @@ export class LineChart extends BaseChart {
       }
 
       const pathData = points
-        .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
+        .map(
+          (p: { x: number; y: number }, i: number) =>
+            `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`,
+        )
         .join(' ');
 
       const path = SVGHelper.createPath({
@@ -256,77 +259,79 @@ export class LineChart extends BaseChart {
       }
 
       if (this.showPoints) {
-        points.forEach((point, pointIndex) => {
-          const isHovered =
-            this.hoveredPoint?.series === seriesIndex &&
-            this.hoveredPoint?.point === pointIndex;
+        points.forEach(
+          (point: { x: number; y: number }, pointIndex: number) => {
+            const isHovered =
+              this.hoveredPoint?.series === seriesIndex &&
+              this.hoveredPoint?.point === pointIndex;
 
-          const circle = SVGHelper.createCircle({
-            cx: point.x,
-            cy: point.y,
-            r: isHovered ? this.pointRadius * 1.5 : this.pointRadius,
-            fill: isHovered
-              ? this.getHoverColor(seriesIndex)
-              : this.getColor(seriesIndex),
-            stroke: this.getBorderColor(seriesIndex),
-            strokeWidth: '1',
-          });
-
-          if (this.isAnimationEnabled) {
-            circle.style.transition = `opacity ${this.animationDuration}ms ease-out, r ${this.animationDuration}ms ease-out`;
-            circle.style.opacity = '0';
-          } else {
-            circle.style.opacity = '1';
-          }
-
-          if (this.hoverEffects) {
-            circle.addEventListener('mouseenter', () => {
-              this.hoveredPoint = { series: seriesIndex, point: pointIndex };
-              this.updatePointStyles();
+            const circle = SVGHelper.createCircle({
+              cx: point.x,
+              cy: point.y,
+              r: isHovered ? this.pointRadius * 1.5 : this.pointRadius,
+              fill: isHovered
+                ? this.getHoverColor(seriesIndex)
+                : this.getColor(seriesIndex),
+              stroke: this.getBorderColor(seriesIndex),
+              strokeWidth: '1',
             });
-            circle.addEventListener('mouseleave', () => {
-              this.hoveredPoint = null;
-              this.updatePointStyles();
-            });
-          }
 
-          g.appendChild(circle);
-
-          if (this.isAnimationEnabled) {
-            setTimeout(
-              () => {
-                circle.style.opacity = '1';
-              },
-              this.animationDuration / 2 + pointIndex * 50,
-            );
-          }
-
-          if (this.showValues && isHovered) {
-            const text = SVGHelper.createText(
-              point.original[this.yKey].toFixed(1),
-              {
-                x: point.x,
-                y: point.y - 15,
-                anchor: 'middle',
-                fontSize: '12px',
-                fill: this.getBorderColor(seriesIndex),
-              },
-            );
-
-            text.style.transition = `opacity 0.2s ease-out`;
-            text.style.opacity = '0';
-
-            g.appendChild(text);
-
-            if (this.animationEnabled) {
-              setTimeout(() => {
-                text.style.opacity = '1';
-              }, 50);
+            if (this.isAnimationEnabled) {
+              circle.style.transition = `opacity ${this.animationDuration}ms ease-out, r ${this.animationDuration}ms ease-out`;
+              circle.style.opacity = '0';
             } else {
-              text.style.opacity = '1';
+              circle.style.opacity = '1';
             }
-          }
-        });
+
+            if (this.hoverEffects) {
+              circle.addEventListener('mouseenter', () => {
+                this.hoveredPoint = { series: seriesIndex, point: pointIndex };
+                this.updatePointStyles();
+              });
+              circle.addEventListener('mouseleave', () => {
+                this.hoveredPoint = null;
+                this.updatePointStyles();
+              });
+            }
+
+            g.appendChild(circle);
+
+            if (this.isAnimationEnabled) {
+              setTimeout(
+                () => {
+                  circle.style.opacity = '1';
+                },
+                this.animationDuration / 2 + pointIndex * 50,
+              );
+            }
+
+            if (this.showValues && isHovered) {
+              const text = SVGHelper.createText(
+                (point as any).original[this.yKey].toFixed(1),
+                {
+                  x: point.x,
+                  y: point.y - 15,
+                  anchor: 'middle',
+                  fontSize: '12px',
+                  fill: this.getBorderColor(seriesIndex),
+                },
+              );
+
+              text.style.transition = `opacity 0.2s ease-out`;
+              text.style.opacity = '0';
+
+              g.appendChild(text);
+
+              if (this.animationEnabled) {
+                setTimeout(() => {
+                  text.style.opacity = '1';
+                }, 50);
+              } else {
+                text.style.opacity = '1';
+              }
+            }
+          },
+        );
       }
     });
 

@@ -270,7 +270,7 @@ export class BarChart extends BaseChart {
         const datasetCount = this.datasets.length;
         const singleBarWidth = barWidth / datasetCount;
 
-        this.datasets.forEach((dataset, datasetIndex) => {
+        this.datasets.forEach((_dataset, datasetIndex) => {
           const value = item.data[datasetIndex];
           const barHeight = yScale(value);
           const barX = x + datasetIndex * singleBarWidth;

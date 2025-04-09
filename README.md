@@ -9,6 +9,7 @@ A lightweight, dependency-free chart library built with Lit and TypeScript.
 - TypeScript support
 - Customizable and extensible
 - Responsive design
+- Configurable animations
 
 ## Installation
 
@@ -53,6 +54,7 @@ const lineData = [
   width="600"
   height="400"
   title="Sample Bar Chart"
+  animationEnabled="true"
 ></bar-chart>
 
 <!-- Pie Chart -->
@@ -61,6 +63,7 @@ const lineData = [
   width="400"
   height="400"
   title="Sample Pie Chart"
+  animationEnabled="true"
 ></pie-chart>
 
 <!-- Line Chart -->
@@ -69,6 +72,7 @@ const lineData = [
   width="600"
   height="400"
   title="Sample Line Chart"
+  animationEnabled="true"
 ></line-chart>
 ```
 
@@ -85,6 +89,8 @@ Properties:
 - `title`: string
 - `data`: any[]
 - `margin`: { top: number, right: number, bottom: number, left: number }
+- `animationEnabled`: boolean (default: true) - Controls whether animations are enabled
+- `animationDuration`: number (default: 800) - Duration of animations in milliseconds
 
 ### BarChart
 
@@ -116,6 +122,25 @@ Properties:
 - `lineWidth`: number (default: 2)
 - `showPoints`: boolean (default: true)
 - `pointRadius`: number (default: 4)
+
+### GaugeChart
+
+Properties:
+
+- All BaseChart properties
+- `value`: number (default: 0)
+- `min`: number (default: 0)
+- `max`: number (default: 100)
+- `warningValue`: number (default: 70)
+- `criticalValue`: number (default: 90)
+- `startAngle`: number (default: -90)
+- `endAngle`: number (default: 90)
+- `arcThickness`: number (default: 30)
+- `showTicks`: boolean (default: true)
+- `showLabels`: boolean (default: true)
+- `numTicks`: number (default: 5)
+- `units`: string (default: '')
+- `precision`: number (default: 0)
 
 ## Development
 

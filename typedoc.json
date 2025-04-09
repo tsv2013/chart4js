@@ -1,0 +1,29 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["lib/**/*.ts"],
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "name": "Chart4JS Documentation",
+  "includeVersion": true,
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeExternals": true,
+  "exclude": ["lib/**/*.test.ts", "lib/declaration.d.ts", "lib/main.ts"],
+  "readme": "README.md",
+  "plugin": ["typedoc-github-theme"],
+  "theme": "typedoc-github-theme",
+  "categorizeByGroup": true,
+  "searchInComments": true,
+  "navigationLinks": {
+    "GitHub": "https://github.com/yourusername/chart4js"
+  },
+  "sidebarLinks": {
+    "API": "https://yourusername.github.io/chart4js/api"
+  },
+  "visibilityFilters": {
+    "protected": true,
+    "private": true,
+    "inherited": true,
+    "external": false
+  }
+}

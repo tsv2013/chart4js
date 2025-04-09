@@ -96,8 +96,7 @@ export class GaugeChart extends BaseChart {
     titleColor: 'rgba(0, 0, 0, 0.85)',
   };
 
-  /** Whether the gauge is currently being hovered */
-  @state() private isHovered = false;
+  // @state() private _isHovered = false;
 
   /** Current value during animation */
   @state() private animatedValue = 0;
@@ -474,8 +473,9 @@ export class GaugeChart extends BaseChart {
    *
    * @param isHovered - Whether the gauge is being hovered
    */
-  private handleHover(isHovered: boolean) {
-    this.isHovered = isHovered;
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  private handleHover(_isHovered: boolean) {
+    // this._isHovered = _isHovered;
     this.drawChart();
   }
 }
