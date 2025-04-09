@@ -10,10 +10,6 @@ interface GaugeTheme {
   titleColor: string;
 }
 
-/**
- * A gauge chart component that displays a value within a range
- * with warning and critical thresholds.
- */
 @customElement('gauge-chart')
 export class GaugeChart extends BaseChart {
   @property({ type: Number }) value = 0;
@@ -69,7 +65,6 @@ export class GaugeChart extends BaseChart {
       const elapsedTime = currentTime - startTime;
       const progress = Math.min(elapsedTime / this.animationDuration, 1);
 
-      // Ease out cubic function for smoother animation
       const easeOut = 1 - Math.pow(1 - progress, 3);
 
       this.animatedValue = startValue + (endValue - startValue) * easeOut;
@@ -88,7 +83,6 @@ export class GaugeChart extends BaseChart {
   private drawChart() {
     if (!this.svgElement) return;
 
-    // Clear previous chart
     this.svgElement.innerHTML = '';
 
     const width = this.width - this.margin.left - this.margin.right;
@@ -97,21 +91,17 @@ export class GaugeChart extends BaseChart {
     const centerX = this.width / 2;
     const centerY = this.height / 2;
 
-    // Adjust SVG viewBox to remove empty space - reduce height more significantly
     this.svgElement.setAttribute(
       'viewBox',
       `0 0 ${this.width} ${this.height * 0.7}`,
     );
 
-    // Create chart group with adjusted vertical position - move up more
     const g = SVGHelper.createGroup(`translate(${centerX},${centerY * 0.75})`);
     this.svgElement.appendChild(g);
 
-    // Calculate inner and outer radius
-    const outerRadius = radius * 0.9; // Slightly smaller to accommodate labels
+    const outerRadius = radius * 0.9;
     const innerRadius = outerRadius - this.arcThickness;
 
-    // Draw background arc
     const backgroundPath = SVGHelper.createPath({
       d: this.createArc(
         outerRadius,
@@ -125,18 +115,16 @@ export class GaugeChart extends BaseChart {
     });
     g.appendChild(backgroundPath);
 
-    // Create dynamic color zones based on warning and critical values
     const dynamicColorZones = [
-      { min: this.min, max: this.warningValue, color: this.getColor(0) }, // Green
+      { min: this.min, max: this.warningValue, color: this.getColor(0) },
       {
         min: this.warningValue,
         max: this.criticalValue,
         color: this.getColor(4),
-      }, // Yellow
-      { min: this.criticalValue, max: this.max, color: this.getColor(1) }, // Red
+      },
+      { min: this.criticalValue, max: this.max, color: this.getColor(1) },
     ];
 
-    // Draw color zones
     dynamicColorZones.forEach((zone) => {
       const startAngle = this.valueToAngle(zone.min);
       const endAngle = this.valueToAngle(zone.max);
@@ -148,21 +136,18 @@ export class GaugeChart extends BaseChart {
       g.appendChild(zonePath);
     });
 
-    // Draw warning and critical threshold markers
     const warningAngle = this.valueToAngle(this.warningValue);
     const criticalAngle = this.valueToAngle(this.criticalValue);
 
-    // Draw warning marker
     const warningPoint = this.polarToCartesian(outerRadius + 10, warningAngle);
     const warningMarker = SVGHelper.createCircle({
       cx: warningPoint.x,
       cy: warningPoint.y,
       r: 5,
-      fill: this.getColor(4), // Yellow
+      fill: this.getColor(4),
     });
     g.appendChild(warningMarker);
 
-    // Add warning label
     const warningLabelPoint = this.polarToCartesian(
       outerRadius + 25,
       warningAngle,
@@ -178,7 +163,6 @@ export class GaugeChart extends BaseChart {
     warningLabel.style.fontWeight = 'bold';
     g.appendChild(warningLabel);
 
-    // Draw critical marker
     const criticalPoint = this.polarToCartesian(
       outerRadius + 10,
       criticalAngle,
@@ -187,11 +171,10 @@ export class GaugeChart extends BaseChart {
       cx: criticalPoint.x,
       cy: criticalPoint.y,
       r: 5,
-      fill: this.getColor(1), // Red
+      fill: this.getColor(1),
     });
     g.appendChild(criticalMarker);
 
-    // Add critical label
     const criticalLabelPoint = this.polarToCartesian(
       outerRadius + 25,
       criticalAngle,
@@ -207,7 +190,6 @@ export class GaugeChart extends BaseChart {
     criticalLabel.style.fontWeight = 'bold';
     g.appendChild(criticalLabel);
 
-    // Draw ticks and labels
     if (this.showTicks || this.showLabels) {
       for (let i = 0; i <= this.numTicks; i++) {
         const tickValue =
@@ -246,7 +228,6 @@ export class GaugeChart extends BaseChart {
       }
     }
 
-    // Draw title
     if (this.title) {
       const titleText = SVGHelper.createText(this.title, {
         x: 0,
@@ -259,7 +240,6 @@ export class GaugeChart extends BaseChart {
       g.appendChild(titleText);
     }
 
-    // Draw subtitle
     if (this.subtitle) {
       const subtitleText = SVGHelper.createText(this.subtitle, {
         x: 0,
@@ -271,15 +251,12 @@ export class GaugeChart extends BaseChart {
       g.appendChild(subtitleText);
     }
 
-    // Draw current value at the end of the arc
     const formattedValue = this.animatedValue.toFixed(this.precision);
 
-    // Calculate the position for the value line
     const valueAngle = this.valueToAngle(this.animatedValue);
 
-    // Draw a line above the arc at the value point, closer to the center
-    const lineLength = 15; // Length of the line above the arc
-    const lineRadius = outerRadius - this.arcThickness / 2; // Position line in the middle of the arc
+    const lineLength = 15;
+    const lineRadius = outerRadius - this.arcThickness / 2;
     const lineStartPoint = this.polarToCartesian(
       lineRadius - lineLength,
       valueAngle,
@@ -298,7 +275,6 @@ export class GaugeChart extends BaseChart {
     });
     g.appendChild(valueLine);
 
-    // Add a circle at the center of the arc
     const centerPoint = this.polarToCartesian(lineRadius, valueAngle);
     const valueCircle = SVGHelper.createCircle({
       cx: centerPoint.x,
@@ -308,11 +284,10 @@ export class GaugeChart extends BaseChart {
     });
     g.appendChild(valueCircle);
 
-    // Add the value text under the arc in the center
     const valueText = SVGHelper.createText(
       this.units ? `${formattedValue}${this.units}` : formattedValue,
       {
-        x: 0, // Center horizontally
+        x: 0,
         y: -12,
         anchor: 'middle',
         dy: '.35em',
@@ -323,7 +298,6 @@ export class GaugeChart extends BaseChart {
     valueText.style.fontWeight = 'bold';
     g.appendChild(valueText);
 
-    // Add hover events
     if (this.hoverEffects) {
       valueLine.addEventListener('mouseenter', () => this.handleHover(true));
       valueLine.addEventListener('mouseleave', () => this.handleHover(false));

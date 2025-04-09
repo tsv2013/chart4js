@@ -24,7 +24,7 @@ export class LineChart extends BaseChart {
   showArea = false;
 
   @property({ type: Number })
-  animationDuration = 800; // Animation duration in milliseconds
+  animationDuration = 800;
 
   @state() private hoveredPoint: { series: number; point: number } | null =
     null;
@@ -53,7 +53,7 @@ export class LineChart extends BaseChart {
       changedProperties.has('pointRadius') ||
       changedProperties.has('showArea')
     ) {
-      this.isFirstRender = true; // Reset first render flag when data changes
+      this.isFirstRender = true;
       this.processData();
       this.drawChart();
     }
@@ -62,11 +62,9 @@ export class LineChart extends BaseChart {
   private processData() {
     if (!this.data.length) return;
 
-    // Check if data is already in dataset format
     if (Object.prototype.hasOwnProperty.call(this.data[0], 'data')) {
       this.datasets = this.data;
     } else {
-      // Convert single series to dataset format
       this.datasets = [
         {
           label: this.yKey,
@@ -80,7 +78,6 @@ export class LineChart extends BaseChart {
   private drawChart() {
     if (!this.renderRoot || !this.datasets.length) return;
 
-    // Clear previous content
     const svg = this.renderRoot.querySelector('svg');
     if (!svg) return;
     svg.innerHTML = '';
@@ -88,13 +85,11 @@ export class LineChart extends BaseChart {
     const width = this.width - this.margin.left - this.margin.right;
     const height = this.height - this.margin.top - this.margin.bottom;
 
-    // Create chart group
     const g = SVGHelper.createGroup(
       `translate(${this.margin.left},${this.margin.top})`,
     );
     svg.appendChild(g);
 
-    // Calculate scales
     const allPoints = this.datasets.flatMap((dataset) => dataset.data);
     const xValues = allPoints.map((d) => d[this.xKey]);
     const yValues = allPoints.map((d) => d[this.yKey]);
@@ -106,11 +101,9 @@ export class LineChart extends BaseChart {
     const xScale = (x: number) => ((x - xMin) / (xMax - xMin)) * width;
     const yScale = (y: number) => ((y - yMin) / (yMax - yMin)) * height;
 
-    // Add X axis
     const xAxis = SVGHelper.createGroup(`translate(0,${height})`);
     g.appendChild(xAxis);
 
-    // Add X axis labels
     const xTicks = 5;
     for (let i = 0; i <= xTicks; i++) {
       const x = (i * width) / xTicks;
@@ -133,11 +126,9 @@ export class LineChart extends BaseChart {
       xAxis.appendChild(line);
     }
 
-    // Add Y axis
     const yAxis = SVGHelper.createGroup();
     g.appendChild(yAxis);
 
-    // Add Y axis labels
     const yTicks = 5;
     for (let i = 0; i <= yTicks; i++) {
       const y = height - (i * height) / yTicks;
@@ -160,7 +151,6 @@ export class LineChart extends BaseChart {
       yAxis.appendChild(line);
     }
 
-    // Draw each dataset
     this.datasets.forEach((dataset, seriesIndex) => {
       const points = dataset.data.map((d, i) => ({
         x: xScale(d[this.xKey]),
@@ -169,7 +159,6 @@ export class LineChart extends BaseChart {
         index: i,
       }));
 
-      // Create area if enabled
       if (this.showArea) {
         const areaData = [
           `M ${points[0].x} ${height}`,
@@ -184,17 +173,15 @@ export class LineChart extends BaseChart {
           stroke: 'none',
         });
 
-        // Add transition for smooth animation only on first render
         if (this.isFirstRender) {
           area.style.transition = `opacity ${this.animationDuration}ms ease-out`;
-          area.style.opacity = '0'; // Start invisible for animation
+          area.style.opacity = '0';
         } else {
-          area.style.opacity = '1'; // Immediately visible when not first render
+          area.style.opacity = '1';
         }
 
         g.appendChild(area);
 
-        // Trigger animation after a small delay only on first render
         if (this.isFirstRender) {
           setTimeout(() => {
             area.style.opacity = '1';
@@ -202,7 +189,6 @@ export class LineChart extends BaseChart {
         }
       }
 
-      // Create path for the line
       const pathData = points
         .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
         .join(' ');
@@ -214,7 +200,6 @@ export class LineChart extends BaseChart {
         strokeWidth: this.lineWidth.toString(),
       });
 
-      // Add transition for smooth animation only on first render
       if (this.isFirstRender) {
         path.style.transition = `stroke-dashoffset ${this.animationDuration}ms ease-out`;
         path.style.strokeDasharray = path.getTotalLength().toString();
@@ -223,14 +208,12 @@ export class LineChart extends BaseChart {
 
       g.appendChild(path);
 
-      // Trigger animation after a small delay only on first render
       if (this.isFirstRender) {
         setTimeout(() => {
           path.style.strokeDashoffset = '0';
         }, 50);
       }
 
-      // Add points if enabled
       if (this.showPoints) {
         points.forEach((point, pointIndex) => {
           const isHovered =
@@ -248,15 +231,13 @@ export class LineChart extends BaseChart {
             strokeWidth: '1',
           });
 
-          // Add transition for smooth animation only on first render
           if (this.isFirstRender) {
             circle.style.transition = `opacity ${this.animationDuration}ms ease-out, r ${this.animationDuration}ms ease-out`;
-            circle.style.opacity = '0'; // Start invisible for animation
+            circle.style.opacity = '0';
           } else {
-            circle.style.opacity = '1'; // Immediately visible when not first render
+            circle.style.opacity = '1';
           }
 
-          // Add hover events
           if (this.hoverEffects) {
             circle.addEventListener('mouseenter', () => {
               this.hoveredPoint = { series: seriesIndex, point: pointIndex };
@@ -270,17 +251,15 @@ export class LineChart extends BaseChart {
 
           g.appendChild(circle);
 
-          // Trigger animation after a small delay only on first render
           if (this.isFirstRender) {
             setTimeout(
               () => {
                 circle.style.opacity = '1';
               },
               this.animationDuration / 2 + pointIndex * 50,
-            ); // Stagger the point animations
+            );
           }
 
-          // Add value labels if enabled and point is hovered
           if (this.showValues && isHovered) {
             const text = SVGHelper.createText(
               point.original[this.yKey].toFixed(1),
@@ -293,13 +272,11 @@ export class LineChart extends BaseChart {
               },
             );
 
-            // Add transition for smooth animation
             text.style.transition = `opacity 0.2s ease-out`;
-            text.style.opacity = '0'; // Start invisible for animation
+            text.style.opacity = '0';
 
             g.appendChild(text);
 
-            // Trigger animation after a small delay
             setTimeout(() => {
               text.style.opacity = '1';
             }, 50);
@@ -308,7 +285,6 @@ export class LineChart extends BaseChart {
       }
     });
 
-    // Add legend if enabled
     if (this.showLegend && this.datasets.length > 1) {
       const legend = SVGHelper.createGroup(
         `translate(${width / 2},${height + 50})`,
@@ -318,7 +294,6 @@ export class LineChart extends BaseChart {
           `translate(${i * 100 - this.datasets.length * 50},0)`,
         );
 
-        // Add line
         const line = SVGHelper.createLine({
           x1: 0,
           y1: 0,
@@ -329,7 +304,6 @@ export class LineChart extends BaseChart {
         });
         legendItem.appendChild(line);
 
-        // Add point if enabled
         if (this.showPoints) {
           const point = SVGHelper.createCircle({
             cx: 7.5,
@@ -355,21 +329,17 @@ export class LineChart extends BaseChart {
       g.appendChild(legend);
     }
 
-    // After drawing is complete, set isFirstRender to false
     this.isFirstRender = false;
   }
 
-  // New method to update point styles without redrawing the entire chart
   private updatePointStyles() {
     if (!this.renderRoot) return;
 
     const svg = this.renderRoot.querySelector('svg');
     if (!svg) return;
 
-    // Find all points and update their styles based on hover state
     const circles = svg.querySelectorAll('circle');
     circles.forEach((circle, i) => {
-      // Calculate which series and point this circle represents
       const seriesIndex = Math.floor(i / this.datasets[0].data.length);
       const pointIndex = i % this.datasets[0].data.length;
 
@@ -378,13 +348,10 @@ export class LineChart extends BaseChart {
         this.hoveredPoint?.point === pointIndex;
 
       if (isHovered) {
-        // Apply hover style
         circle.setAttribute('r', (this.pointRadius * 1.5).toString());
         circle.setAttribute('fill', this.getHoverColor(seriesIndex));
 
-        // Add value label if enabled
         if (this.showValues) {
-          // Check if label already exists
           const existingLabel = svg.querySelector(
             `text[data-point="${seriesIndex}-${pointIndex}"]`,
           );
@@ -402,27 +369,22 @@ export class LineChart extends BaseChart {
               fill: this.getBorderColor(seriesIndex),
             });
 
-            // Add data attribute to identify this label
             text.setAttribute('data-point', `${seriesIndex}-${pointIndex}`);
 
-            // Add transition for smooth animation
             text.style.transition = `opacity 0.2s ease-out`;
-            text.style.opacity = '0'; // Start invisible for animation
+            text.style.opacity = '0';
 
             svg.querySelector('g')?.appendChild(text);
 
-            // Trigger animation after a small delay
             setTimeout(() => {
               text.style.opacity = '1';
             }, 50);
           }
         }
       } else {
-        // Apply normal style
         circle.setAttribute('r', this.pointRadius.toString());
         circle.setAttribute('fill', this.getColor(seriesIndex));
 
-        // Remove value label if it exists
         const label = svg.querySelector(
           `text[data-point="${seriesIndex}-${pointIndex}"]`,
         );

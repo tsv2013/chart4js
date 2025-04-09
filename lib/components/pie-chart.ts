@@ -13,7 +13,6 @@ export class PieChart extends BaseChart {
   @state() private hoveredSegment: number | null = null;
   @state() private total: number = 0;
   @state() private labelPositions: { x: number; y: number }[] = [];
-  @state() private animationInProgress = false;
   @state() private isFirstRender = true;
 
   protected override firstUpdated() {
@@ -39,24 +38,19 @@ export class PieChart extends BaseChart {
     const radius = Math.min(width, height) / 2;
     const centerX = this.width / 2;
     const centerY = this.height / 2;
-    // Create chart group
     const g = SVGHelper.createGroup(`translate(${centerX},${centerY})`);
     this.svgElement.appendChild(g);
 
-    // Calculate total and angles
     this.total = this.data.reduce((sum, d) => sum + d[this.valueKey], 0);
     let startAngle = 0;
 
-    // Reset label positions array
     this.labelPositions = [];
 
-    // Draw pie segments
     this.data.forEach((d, i) => {
       const value = d[this.valueKey];
       const angle = (value / this.total) * 2 * Math.PI;
       const endAngle = startAngle + angle;
 
-      // Create path for pie segment
       const start = this.polarToCartesian(radius, startAngle);
       const end = this.polarToCartesian(radius, endAngle);
       const innerStart = this.polarToCartesian(this.innerRadius, startAngle);
@@ -89,14 +83,12 @@ export class PieChart extends BaseChart {
         'Z',
       ].join(' ');
 
-      // Apply hover effect if segment is hovered
       const isHovered = this.hoveredSegment === i;
       const segmentRadius = isHovered ? radius * 1.05 : radius;
       const segmentInnerRadius = isHovered
         ? this.innerRadius * 1.05
         : this.innerRadius;
 
-      // Recalculate path with adjusted radius for hover effect
       const hoverStart = this.polarToCartesian(segmentRadius, startAngle);
       const hoverEnd = this.polarToCartesian(segmentRadius, endAngle);
       const hoverInnerStart = this.polarToCartesian(
@@ -138,17 +130,14 @@ export class PieChart extends BaseChart {
         strokeWidth: '1',
       });
 
-      // Add animation styles
       path.style.transition = `transform ${this.animationDuration}ms ease-out`;
       path.style.transformOrigin = '0 0';
 
-      // Initial animation only on first render
       if (this.isFirstRender) {
         path.style.transform = 'scale(0)';
         path.style.opacity = '0';
       }
 
-      // Add hover events
       if (this.hoverEffects) {
         path.addEventListener('mouseenter', () => this.handleSegmentHover(i));
         path.addEventListener('mouseleave', () => this.handleSegmentLeave());
@@ -156,7 +145,6 @@ export class PieChart extends BaseChart {
 
       g.appendChild(path);
 
-      // Trigger initial animation after a small delay
       if (this.isFirstRender) {
         requestAnimationFrame(() => {
           path.style.transform = 'scale(1)';
@@ -164,22 +152,17 @@ export class PieChart extends BaseChart {
         });
       }
 
-      // Add label
       const labelAngle = startAngle + angle / 2;
       const labelRadius = radius * 0.7;
       const labelPos = this.polarToCartesian(labelRadius, labelAngle);
 
-      // Store the base label position for animation
       this.labelPositions[i] = { x: labelPos.x, y: labelPos.y };
 
-      // Only show labels if segment is large enough or if it's hovered
       if (angle > 0.1 || isHovered) {
-        // Create a group for all labels
         const labelGroup = SVGHelper.createGroup(
           `translate(${labelPos.x},${labelPos.y})`,
         );
 
-        // Add main label
         const text = SVGHelper.createText(d[this.labelKey], {
           x: 0,
           y: 0,
@@ -190,7 +173,6 @@ export class PieChart extends BaseChart {
         text.style.fill = this.getBorderColor(i);
         labelGroup.appendChild(text);
 
-        // Add value label if enabled
         if (this.showValues && (angle > 0.2 || isHovered)) {
           const valueText = SVGHelper.createText(value.toString(), {
             x: 0,
@@ -203,7 +185,6 @@ export class PieChart extends BaseChart {
           labelGroup.appendChild(valueText);
         }
 
-        // Add percentage if enabled
         if (this.showPercentages && (angle > 0.2 || isHovered)) {
           const percentage = ((value / this.total) * 100).toFixed(1);
           const percentageText = SVGHelper.createText(`${percentage}%`, {
@@ -217,27 +198,21 @@ export class PieChart extends BaseChart {
           labelGroup.appendChild(percentageText);
         }
 
-        // Calculate the direction vector from center to the label position
         const dirX = labelPos.x;
         const dirY = labelPos.y;
         const length = Math.sqrt(dirX * dirX + dirY * dirY);
 
-        // Normalize the direction vector
         const normalizedDirX = dirX / length;
         const normalizedDirY = dirY / length;
 
-        // Calculate the offset for the label based on hover state
         const offsetFactor = isHovered ? 0.5 : 0.1;
         const newX = labelPos.x + normalizedDirX * radius * offsetFactor;
         const newY = labelPos.y + normalizedDirY * radius * offsetFactor;
 
-        // Update the transform attribute to position the label group
         labelGroup.setAttribute('transform', `translate(${newX},${newY})`);
 
-        // Add transition for smooth animation
         labelGroup.style.transition = `transform ${this.animationDuration}ms ease-out`;
 
-        // Add start animation for labels
         if (this.isFirstRender) {
           labelGroup.style.opacity = '0';
           labelGroup.style.transition = `transform ${this.animationDuration}ms ease-out, opacity ${this.animationDuration}ms ease-out`;
@@ -245,7 +220,6 @@ export class PieChart extends BaseChart {
 
         g.appendChild(labelGroup);
 
-        // Trigger label animation after a small delay
         if (this.isFirstRender) {
           requestAnimationFrame(() => {
             labelGroup.style.opacity = '1';
@@ -256,7 +230,6 @@ export class PieChart extends BaseChart {
       startAngle = endAngle;
     });
 
-    // Add legend if enabled
     if (this.showLegend) {
       const legend = SVGHelper.createGroup(
         `translate(${width / 2},${height / 2 + radius + 30})`,
@@ -290,7 +263,6 @@ export class PieChart extends BaseChart {
       g.appendChild(legend);
     }
 
-    // Set isFirstRender to false after initial animation
     if (this.isFirstRender) {
       setTimeout(() => {
         this.isFirstRender = false;

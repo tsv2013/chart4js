@@ -10,7 +10,7 @@ export class BarChart extends BaseChart {
   @property({ type: String }) color = '#1f77b4';
   @property({ type: Boolean }) showButtons = true;
   @property({ type: Number }) limit = 10;
-  @property({ type: Number }) animationDuration = 800; // Animation duration in milliseconds
+  @property({ type: Number }) animationDuration = 800;
 
   @state() private offset = 0;
   @state() private isFirstRender = true;
@@ -34,18 +34,13 @@ export class BarChart extends BaseChart {
   private processData() {
     if (!this.data.length) return;
 
-    // Reset first render flag when data changes
     this.isFirstRender = true;
 
-    // Check if we have multiple datasets
     if (this.hasMultipleDatasets) {
-      // Process multiple datasets
       const processedData: any[] = [];
 
-      // Group data by category
       const categories = [...new Set(this.data.map((item) => item[this.xKey]))];
 
-      // For each category, create a dataset entry
       categories.forEach((category) => {
         const categoryData = this.data.find(
           (item) => item[this.xKey] === category,
@@ -70,10 +65,8 @@ export class BarChart extends BaseChart {
         this.offset + this.limit,
       );
     } else {
-      // Original single dataset processing
       this.maxValue = 0;
 
-      // Create datasets directly from the data
       const processedData: any[] = this.data.map((item, index) => {
         const value = item[this.yKey];
         this.maxValue = Math.max(this.maxValue, value);
@@ -86,7 +79,6 @@ export class BarChart extends BaseChart {
         };
       });
 
-      // Apply pagination
       this.processedData = processedData.slice(
         this.offset,
         this.offset + this.limit,
@@ -111,7 +103,6 @@ export class BarChart extends BaseChart {
   private handleBarHover(index: number) {
     if (this.hoverEffects) {
       this.hoveredBar = index;
-      // Instead of redrawing the entire chart, just update the bar colors
       this.updateBarColors();
     }
   }
@@ -119,19 +110,16 @@ export class BarChart extends BaseChart {
   private handleBarLeave() {
     if (this.hoverEffects) {
       this.hoveredBar = null;
-      // Instead of redrawing the entire chart, just update the bar colors
       this.updateBarColors();
     }
   }
 
-  // New method to update bar colors without redrawing the entire chart
   private updateBarColors() {
     if (!this.renderRoot) return;
 
     const svg = this.renderRoot.querySelector('svg');
     if (!svg) return;
 
-    // Find all bars and update their colors based on hover state
     const bars = svg.querySelectorAll('rect');
     bars.forEach((bar, i) => {
       const barIndex = Math.floor(
@@ -139,7 +127,6 @@ export class BarChart extends BaseChart {
       );
 
       if (this.hoveredBar === barIndex) {
-        // Apply hover color
         if (this.hasMultipleDatasets) {
           const datasetIndex = i % this.datasets.length;
           bar.setAttribute(
@@ -150,7 +137,6 @@ export class BarChart extends BaseChart {
           bar.setAttribute('fill', this.processedData[barIndex].hoverColor);
         }
       } else {
-        // Apply normal color
         if (this.hasMultipleDatasets) {
           const datasetIndex = i % this.datasets.length;
           bar.setAttribute(
@@ -167,7 +153,6 @@ export class BarChart extends BaseChart {
   private drawChart() {
     if (!this.renderRoot || !this.processedData.length) return;
 
-    // Clear previous content
     const svg = this.renderRoot.querySelector('svg');
     if (!svg) return;
     svg.innerHTML = '';
@@ -175,21 +160,17 @@ export class BarChart extends BaseChart {
     const width = this.width - this.margin.left - this.margin.right;
     const height = this.height - this.margin.top - this.margin.bottom;
 
-    // Create chart group
     const g = SVGHelper.createGroup(
       `translate(${this.margin.left},${this.margin.top})`,
     );
     svg.appendChild(g);
 
-    // Calculate scales - Fix y-axis direction
     const xScale = (x: number) => (x / this.processedData.length) * width;
     const yScale = (y: number) => (y / this.maxValue) * height; // Fixed: Correct y-axis direction
 
-    // Draw axes
     const xAxis = SVGHelper.createGroup(`translate(0,${height})`);
     g.appendChild(xAxis);
 
-    // Draw X axis line
     const xAxisLine = SVGHelper.createLine({
       x1: 0,
       y1: 0,
@@ -199,11 +180,9 @@ export class BarChart extends BaseChart {
     });
     xAxis.appendChild(xAxisLine);
 
-    // Draw Y axis
     const yAxis = SVGHelper.createGroup();
     g.appendChild(yAxis);
 
-    // Draw Y axis line
     const yAxisLine = SVGHelper.createLine({
       x1: 0,
       y1: 0,
@@ -213,10 +192,9 @@ export class BarChart extends BaseChart {
     });
     yAxis.appendChild(yAxisLine);
 
-    // Draw Y axis labels - Fix y-axis direction
     const yTicks = 5;
     for (let i = 0; i <= yTicks; i++) {
-      const y = height - (i * height) / yTicks; // Fixed: Correct y-axis direction
+      const y = height - (i * height) / yTicks;
       const value = (this.maxValue * i) / yTicks;
 
       const text = SVGHelper.createText(value.toFixed(0), {
@@ -236,29 +214,25 @@ export class BarChart extends BaseChart {
       yAxis.appendChild(line);
     }
 
-    // Check if we have multiple datasets
     if (this.hasMultipleDatasets) {
-      // Draw bars for multiple datasets
       this.processedData.forEach((item, index) => {
         const x = xScale(index);
-        const barWidth = xScale(1) * 0.8; // 80% of the available width
+        const barWidth = xScale(1) * 0.8;
 
-        // Calculate the number of datasets and the width for each bar
         const datasetCount = this.datasets.length;
         const singleBarWidth = barWidth / datasetCount;
 
-        // Draw a bar for each dataset
         this.datasets.forEach((dataset, datasetIndex) => {
           const value = item.data[datasetIndex];
-          const barHeight = yScale(value); // Fixed: Correct bar height calculation
+          const barHeight = yScale(value);
           const barX = x + datasetIndex * singleBarWidth;
 
           // Create the bar
           const bar = SVGHelper.createRect({
             x: barX,
-            y: height, // Start from the bottom (height) for animation
+            y: height,
             width: singleBarWidth,
-            height: 0, // Start with height 0 for animation
+            height: 0,
             fill:
               this.hoveredBar === index
                 ? item.hoverColors[datasetIndex]
@@ -267,12 +241,10 @@ export class BarChart extends BaseChart {
             strokeWidth: '1',
           });
 
-          // Add transition for smooth animation only on first render
           if (this.isFirstRender) {
             bar.style.transition = `height ${this.animationDuration}ms ease-out, y ${this.animationDuration}ms ease-out`;
           }
 
-          // Add hover effects
           if (this.hoverEffects) {
             bar.addEventListener('mouseenter', () =>
               this.handleBarHover(index),
@@ -282,13 +254,11 @@ export class BarChart extends BaseChart {
 
           g.appendChild(bar);
 
-          // Trigger animation after a small delay
           setTimeout(() => {
             bar.setAttribute('height', barHeight.toString());
             bar.setAttribute('y', (height - barHeight).toString());
           }, 50);
 
-          // Add value labels if enabled
           if (this.showValues) {
             const text = SVGHelper.createText(value.toFixed(0), {
               x: barX + singleBarWidth / 2,
@@ -296,17 +266,15 @@ export class BarChart extends BaseChart {
               anchor: 'middle',
             });
 
-            // Add transition for smooth animation only on first render
             if (this.isFirstRender) {
               text.style.transition = `opacity ${this.animationDuration}ms ease-out`;
-              text.style.opacity = '0'; // Start invisible for animation
+              text.style.opacity = '0';
             } else {
-              text.style.opacity = '1'; // Immediately visible when not first render
+              text.style.opacity = '1';
             }
 
             g.appendChild(text);
 
-            // Trigger animation after a small delay only on first render
             if (this.isFirstRender) {
               setTimeout(() => {
                 text.style.opacity = '1';
@@ -315,7 +283,6 @@ export class BarChart extends BaseChart {
           }
         });
 
-        // Add X axis labels
         const text = SVGHelper.createText(item.label, {
           x: x + barWidth / 2,
           y: 20,
@@ -324,35 +291,30 @@ export class BarChart extends BaseChart {
         xAxis.appendChild(text);
       });
 
-      // Render legend if enabled
       if (this.showLegend) {
         this.renderLegend(g, width);
       }
     } else {
-      // Draw bars for single dataset
       this.processedData.forEach((item, index) => {
         const x = xScale(index);
-        const barWidth = xScale(1) * 0.8; // 80% of the available width
+        const barWidth = xScale(1) * 0.8;
         const value = item.data[0];
-        const barHeight = yScale(value); // Fixed: Correct bar height calculation
+        const barHeight = yScale(value);
 
-        // Create the bar
         const bar = SVGHelper.createRect({
           x,
-          y: height, // Start from the bottom (height) for animation
+          y: height,
           width: barWidth,
-          height: 0, // Start with height 0 for animation
+          height: 0,
           fill: this.hoveredBar === index ? item.hoverColor : item.color,
           stroke: this.getBorderColor(index),
           strokeWidth: '1',
         });
 
-        // Add transition for smooth animation only on first render
         if (this.isFirstRender) {
           bar.style.transition = `height ${this.animationDuration}ms ease-out, y ${this.animationDuration}ms ease-out`;
         }
 
-        // Add hover effects
         if (this.hoverEffects) {
           bar.addEventListener('mouseenter', () => this.handleBarHover(index));
           bar.addEventListener('mouseleave', () => this.handleBarLeave());
@@ -360,31 +322,27 @@ export class BarChart extends BaseChart {
 
         g.appendChild(bar);
 
-        // Trigger animation after a small delay
         setTimeout(() => {
           bar.setAttribute('height', barHeight.toString());
           bar.setAttribute('y', (height - barHeight).toString());
         }, 50);
 
-        // Add value labels if enabled
         if (this.showValues) {
           const text = SVGHelper.createText(value.toFixed(0), {
             x: x + barWidth / 2,
-            y: height - barHeight - 5, // Fixed: Correct label position
+            y: height - barHeight - 5,
             anchor: 'middle',
           });
 
-          // Add transition for smooth animation only on first render
           if (this.isFirstRender) {
             text.style.transition = `opacity ${this.animationDuration}ms ease-out`;
-            text.style.opacity = '0'; // Start invisible for animation
+            text.style.opacity = '0';
           } else {
-            text.style.opacity = '1'; // Immediately visible when not first render
+            text.style.opacity = '1';
           }
 
           g.appendChild(text);
 
-          // Trigger animation after a small delay only on first render
           if (this.isFirstRender) {
             setTimeout(() => {
               text.style.opacity = '1';
@@ -392,7 +350,6 @@ export class BarChart extends BaseChart {
           }
         }
 
-        // Add X axis labels
         const text = SVGHelper.createText(item.label, {
           x: x + barWidth / 2,
           y: 20,
@@ -402,7 +359,6 @@ export class BarChart extends BaseChart {
       });
     }
 
-    // After drawing is complete, set isFirstRender to false
     this.isFirstRender = false;
   }
 
@@ -412,13 +368,11 @@ export class BarChart extends BaseChart {
     );
     g.appendChild(legend);
 
-    // Add legend items
     this.datasets.forEach((dataset, index) => {
       const legendItem = SVGHelper.createGroup(
         `translate(${index * 100 - this.datasets.length * 50},0)`,
       );
 
-      // Add color box
       const box = SVGHelper.createRect({
         x: 0,
         y: -7.5,
@@ -430,7 +384,6 @@ export class BarChart extends BaseChart {
       });
       legendItem.appendChild(box);
 
-      // Add label
       const text = SVGHelper.createText(
         dataset.label || `Dataset ${index + 1}`,
         {

@@ -150,11 +150,9 @@ export class WordCloud extends LitElement {
       container.style.overflow = 'auto';
     }
 
-    // Clear previous words
     this.placedWords = [];
     container.innerHTML = '';
 
-    // Sort words by weight
     const sortedWords = [...this.words].sort((a, b) => b[1] - a[1]);
     this.minWeight = sortedWords[sortedWords.length - 1][1];
     this.weight =

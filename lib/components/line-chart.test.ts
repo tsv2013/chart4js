@@ -13,7 +13,6 @@ describe.skip('LineChart', () => {
   ];
 
   beforeEach(async () => {
-    // Register the custom element if not already registered
     if (!customElements.get('line-chart')) {
       customElements.define('line-chart', LineChart);
     }
@@ -132,11 +131,9 @@ describe.skip('LineChart', () => {
       .querySelector('svg')
       ?.querySelectorAll('g')[2];
 
-    // Check X axis ticks (5 ticks + 1 for the end)
     expect(xAxis?.querySelectorAll('text').length).toBe(6);
     expect(xAxis?.querySelectorAll('line').length).toBe(6);
 
-    // Check Y axis ticks (5 ticks + 1 for the end)
     expect(yAxis?.querySelectorAll('text').length).toBe(6);
     expect(yAxis?.querySelectorAll('line').length).toBe(6);
   });

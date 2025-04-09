@@ -3,11 +3,9 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ConnectorPoints } from './gantt-connector-line';
 
-// Constants
 const MIN_TIME_INTERVAL = 60 * 60 * 24 * 1000; // 1 day in milliseconds
 const LINE_HEIGHT = 35;
 
-// Date utility functions
 const addDay = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
 const addWeek = (date: Date): Date =>
@@ -18,7 +16,6 @@ const addQuarter = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth() + 3, 1);
 const addYear = (date: Date): Date => new Date(date.getFullYear() + 1, 0, 1);
 
-// Month names for display
 const monthNames = [
   'Jan',
   'Feb',
@@ -34,7 +31,6 @@ const monthNames = [
   'Dec',
 ];
 
-// Scale configurations
 const scales = [
   { scale: 0.5, nextDate: addYear },
   { scale: 0.7, nextDate: addYear },
@@ -51,7 +47,6 @@ const scales = [
   { scale: 200, nextDate: addDay },
 ];
 
-// Interfaces
 export interface GanttItem {
   id: string;
   title: string;
@@ -304,7 +299,6 @@ export class GanttChart extends LitElement {
     this._startDate = minDate;
     this._finishDate = maxDate;
 
-    // Set min and max dates to year boundaries
     const yearStart = new Date(minDate.getFullYear(), 0, 1);
     const yearEnd = new Date(maxDate.getFullYear(), 11, 31);
 

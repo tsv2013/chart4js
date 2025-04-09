@@ -2,10 +2,8 @@ import { LitElement, html, css, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
-// Constants
 const GRID_STEP = 10;
 
-// Point class for calculations
 class Point {
   constructor(
     public x: number,
@@ -13,7 +11,6 @@ class Point {
   ) {}
 }
 
-// Function to determine turn direction
 function turnValue(p1: Point, p2: Point, p3: Point): number {
   if ((p2.x - p1.x) * (p3.y - p2.y) - (p2.y - p1.y) * (p3.x - p2.x) > 0) {
     return 1;
@@ -21,7 +18,6 @@ function turnValue(p1: Point, p2: Point, p3: Point): number {
   return 0;
 }
 
-// Interface for connector points
 export interface ConnectorPoints {
   startX: number;
   startY: number;
@@ -70,11 +66,9 @@ export class GanttConnectorLine extends LitElement {
   private _calculatePath() {
     if (!this.points) return;
 
-    // Create points
     const p1 = new Point(this.points.startX, this.points.startY);
     const p2 = new Point(this.points.endX, this.points.endY);
 
-    // Adjust points for grid
     const minX = p1.x < p2.x ? p1.x : p2.x;
     p1.x -= minX - 2 * GRID_STEP;
     p2.x -= minX - 2 * GRID_STEP;
@@ -83,7 +77,6 @@ export class GanttConnectorLine extends LitElement {
     p1.y -= minY - 2 * GRID_STEP;
     p2.y -= minY - 2 * GRID_STEP;
 
-    // Set position and dimensions
     this._left =
       (p1.x < p2.x ? this.points.startX : this.points.endX) - 2 * GRID_STEP;
     this._top =
@@ -93,18 +86,15 @@ export class GanttConnectorLine extends LitElement {
     this._height =
       (p1.y < p2.y ? Math.abs(p2.y) : Math.abs(p1.y)) + 2 * GRID_STEP;
 
-    // Calculate path points
     const points: Point[] = [];
 
     if (p2.x - p1.x > 3 * GRID_STEP) {
-      // Horizontal path
       const x3 = p1.x + 2 * GRID_STEP;
       points.push(p1);
       points.push(new Point(x3, p1.y));
       points.push(new Point(x3, p2.y));
       points.push(p2);
     } else {
-      // Vertical path
       const y3 = p2.y > p1.y ? p1.y + 2 * GRID_STEP : p2.y - 2 * GRID_STEP;
       points.push(p1);
       points.push(new Point(p1.x + 2 * GRID_STEP, p1.y));
@@ -114,7 +104,7 @@ export class GanttConnectorLine extends LitElement {
       points.push(p2);
 
       if (p2.x < p1.x) {
-        this._width += 2; // Fix for SVG width
+        this._width += 2;
       }
     }
 

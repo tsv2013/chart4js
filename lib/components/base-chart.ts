@@ -89,10 +89,8 @@ export class BaseChart extends LitElement {
     const container = this.shadowRoot?.querySelector('.chart-container');
     if (!container) return;
 
-    // Clear any existing SVG
     container.innerHTML = '';
 
-    // Create new SVG
     this.svgElement = SVGHelper.createSVG(
       this.width,
       this.height,
@@ -100,7 +98,6 @@ export class BaseChart extends LitElement {
     );
     container.appendChild(this.svgElement);
 
-    // Add title if provided
     if (this.title) {
       const titleElement = SVGHelper.createText(this.title, {
         x: this.width / 2,
