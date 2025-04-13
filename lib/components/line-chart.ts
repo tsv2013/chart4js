@@ -116,7 +116,8 @@ export class LineChart extends BaseChart {
     }
   }
 
-  private drawChart() {
+  protected override drawChart() {
+    super.drawChart();
     if (!this.renderRoot || !this.datasets.length) return;
 
     const svg = this.renderRoot.querySelector('svg');

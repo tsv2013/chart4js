@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { BarChart } from './bar-chart';
 import { SVGHelper } from '../utils/svg-helper';
-import { renderComponent } from '../../src/setupTests';
-import { html } from 'lit';
 
 vi.mock('../utils/svg-helper', () => ({
   SVGHelper: {
@@ -35,17 +33,21 @@ vi.mock('../utils/svg-helper', () => ({
 }));
 
 describe.skip('BarChart', () => {
-  let element: BarChart;
+  let chart: BarChart;
   const testData = [
     { category: 'A', value: 10 },
     { category: 'B', value: 20 },
     { category: 'C', value: 15 },
   ];
 
-  beforeEach(() => {
-    const container = renderComponent(html`<bar-chart></bar-chart>`);
-    element = container.querySelector('bar-chart') as BarChart;
-    document.body.appendChild(container);
+  beforeEach(async () => {
+    if (!customElements.get('bar-chart')) {
+      customElements.define('bar-chart', BarChart);
+    }
+    chart = document.createElement('bar-chart') as BarChart;
+    chart.animationEnabled = false;
+    document.body.appendChild(chart);
+    await chart.updateComplete;
   });
 
   afterEach(() => {
@@ -54,14 +56,13 @@ describe.skip('BarChart', () => {
   });
 
   it('should create with default properties', () => {
-    expect(element.xKey).toBe('category');
-    expect(element.yKey).toBe('value');
-    expect(element.color).toBe('#1f77b4');
+    expect(chart.xKey).toBe('category');
+    expect(chart.yKey).toBe('value');
   });
 
   it('should create chart elements when data is provided', async () => {
-    element.data = testData;
-    await element.updateComplete;
+    chart.data = testData;
+    await chart.updateComplete;
 
     // Check if main group was created
     expect(SVGHelper.createGroup).toHaveBeenCalledWith('translate(40,20)');
@@ -88,24 +89,24 @@ describe.skip('BarChart', () => {
   });
 
   it('should update chart when data changes', async () => {
-    element.data = testData;
-    await element.updateComplete;
+    chart.data = testData;
+    await chart.updateComplete;
 
     const newData = [
       { category: 'X', value: 30 },
       { category: 'Y', value: 40 },
     ];
-    element.data = newData;
-    await element.updateComplete;
+    chart.data = newData;
+    await chart.updateComplete;
 
     // Check if new bars were created
     expect(SVGHelper.createRect).toHaveBeenCalledTimes(5); // 3 from first render + 2 from update
   });
 
   it('should update chart when properties change', async () => {
-    element.data = testData;
-    element.color = '#ff0000';
-    await element.updateComplete;
+    chart.data = testData;
+    chart.colors = ['#ff0000'];
+    await chart.updateComplete;
 
     expect(SVGHelper.createRect).toHaveBeenCalledWith(
       expect.objectContaining({

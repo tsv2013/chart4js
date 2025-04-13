@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SVGHelper } from '../utils/svg-helper';
 
@@ -111,7 +111,7 @@ export class BaseChart extends LitElement {
    * @param index - The index of the element in the data array
    * @returns A color string in rgba format with 0.2 opacity
    */
-  protected getColor(index: number): string {
+  public getColor(index: number): string {
     const color = this.colors[index % this.colors.length];
     return `rgba(${color}, 0.2)`;
   }
@@ -121,7 +121,7 @@ export class BaseChart extends LitElement {
    * @param index - The index of the element in the data array
    * @returns A color string in rgba format with 0.4 opacity
    */
-  protected getHoverColor(index: number): string {
+  public getHoverColor(index: number): string {
     const color = this.colors[index % this.colors.length];
     return `rgba(${color}, 0.4)`;
   }
@@ -131,7 +131,7 @@ export class BaseChart extends LitElement {
    * @param index - The index of the element in the data array
    * @returns A color string in rgba format with 1.0 opacity
    */
-  protected getBorderColor(index: number): string {
+  public getBorderColor(index: number): string {
     const color = this.colors[index % this.colors.length];
     return `rgba(${color}, 1)`;
   }
@@ -159,10 +159,10 @@ export class BaseChart extends LitElement {
    * Initializes the chart by creating the SVG element and setting up the title.
    */
   protected firstUpdated() {
-    this.initializeChart();
+    this.drawChart();
   }
 
-  protected get isAnimationEnabled() {
+  public get isAnimationEnabled() {
     return this.animationEnabled && this.isFirstRender;
   }
 
@@ -171,7 +171,7 @@ export class BaseChart extends LitElement {
    * This method is called after the component is first updated and can be
    * overridden by child classes to add additional initialization logic.
    */
-  protected initializeChart() {
+  protected drawChart() {
     const container = this.shadowRoot?.querySelector('.chart-container');
     if (!container) return;
 
@@ -192,6 +192,25 @@ export class BaseChart extends LitElement {
         fontSize: '16px',
       });
       this.svgElement.appendChild(titleElement);
+    }
+  }
+
+  /**
+   * Lifecycle method called when component properties change.
+   * Re-draws the chart if the data has changed.
+   *
+   * @param changedProperties - Map of changed property names to their old values
+   */
+  protected override updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
+    if (
+      changedProperties.has('data') ||
+      changedProperties.has('width') ||
+      changedProperties.has('height') ||
+      changedProperties.has('title')
+    ) {
+      this.isFirstRender = true;
+      this.drawChart();
     }
   }
 

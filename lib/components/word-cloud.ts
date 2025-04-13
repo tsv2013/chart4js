@@ -217,7 +217,7 @@ export class WordCloud extends LitElement {
    * This method is called when the component is first updated or when
    * the words, colors, or options properties change.
    */
-  private renderWordCloud() {
+  private drawChart() {
     const container = this.shadowRoot?.querySelector(
       '.word-cloud-container',
     ) as HTMLDivElement;
@@ -255,7 +255,7 @@ export class WordCloud extends LitElement {
    * Initializes the word cloud.
    */
   protected firstUpdated() {
-    this.renderWordCloud();
+    this.drawChart();
   }
 
   /**
@@ -270,7 +270,7 @@ export class WordCloud extends LitElement {
       changedProperties.has('colors') ||
       changedProperties.has('options')
     ) {
-      this.renderWordCloud();
+      this.drawChart();
     }
   }
 

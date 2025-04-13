@@ -58,24 +58,11 @@ export class PieChart extends BaseChart {
   }
 
   /**
-   * Lifecycle method called when component properties change.
-   * Re-draws the chart if the data has changed.
-   *
-   * @param changedProperties - Map of changed property names to their old values
-   */
-  protected override updated(changedProperties: Map<string, object>) {
-    super.updated(changedProperties);
-    if (changedProperties.has('data')) {
-      this.isFirstRender = true;
-      this.drawChart();
-    }
-  }
-
-  /**
    * Draws the pie chart by creating SVG elements for each segment.
    * Calculates segment angles, positions, and adds labels.
    */
-  private drawChart() {
+  protected override drawChart() {
+    super.drawChart();
     if (!this.svgElement || !this.data.length) return;
 
     this.svgElement.innerHTML = '';

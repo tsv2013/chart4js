@@ -31,9 +31,6 @@ export class BarChart extends BaseChart {
   /** Property name in the data objects that represents the Y-axis values */
   @property({ type: String }) yKey = 'value';
 
-  /** Default color for the bars when not using the color palette */
-  @property({ type: String }) color = '#1f77b4';
-
   /** Whether to show navigation buttons for paginated data */
   @property({ type: Boolean }) showButtons = true;
 
@@ -198,7 +195,8 @@ export class BarChart extends BaseChart {
     });
   }
 
-  private drawChart() {
+  protected override drawChart() {
+    super.drawChart();
     if (!this.renderRoot || !this.processedData.length) return;
 
     const svg = this.renderRoot.querySelector('svg');

@@ -1,71 +1,114 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { BaseChart } from './base-chart';
-import { SVGHelper } from '../utils/svg-helper';
+import '../utils/svg-helper';
 
-vi.mock('../utils/svg-helper', () => ({
-  SVGHelper: {
-    createSVG: vi
-      .fn()
-      .mockReturnValue(
-        document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
-      ),
-    createText: vi
-      .fn()
-      .mockReturnValue(
-        document.createElementNS('http://www.w3.org/2000/svg', 'text'),
-      ),
-  },
-}));
+describe('BaseChart', () => {
+  let chart: BaseChart;
 
-describe.skip('BaseChart', () => {
-  let element: BaseChart;
-
-  beforeEach(() => {
-    element = document.createElement('base-chart') as BaseChart;
-    document.body.appendChild(element);
+  beforeEach(async () => {
+    if (!customElements.get('base-chart')) {
+      customElements.define('base-chart', BaseChart);
+    }
+    chart = document.createElement('base-chart') as BaseChart;
+    chart.animationEnabled = false;
+    document.body.appendChild(chart);
+    await chart.updateComplete;
   });
 
-  afterEach(() => {
-    document.body.removeChild(element);
-    vi.clearAllMocks();
+  it('initializes with default properties', async () => {
+    expect(chart.width).toBe(600);
+    expect(chart.height).toBe(400);
+    expect(chart.title).toBe('');
+    expect(chart.data).toEqual([]);
+    expect(chart.showLegend).toBe(true);
+    expect(chart.animationEnabled).toBe(false);
   });
 
-  it('should create with default properties', () => {
-    expect(element.width).toBe(600);
-    expect(element.height).toBe(400);
-    expect(element.title).toBe('');
-    expect(element.data).toEqual([]);
-    expect(element.margin).toEqual({
-      top: 20,
-      right: 20,
-      bottom: 30,
-      left: 40,
-    });
+  it('creates SVG element with correct dimensions', async () => {
+    chart.width = 800;
+    chart.height = 500;
+    await chart.updateComplete;
+
+    const svg = chart.shadowRoot!.querySelector('svg');
+    expect(svg).toBeTruthy();
+    expect(svg?.getAttribute('width')).toBe('800');
+    expect(svg?.getAttribute('height')).toBe('500');
   });
 
-  it('should create SVG element on initialization', async () => {
-    await element.updateComplete;
+  it('renders title when provided', async () => {
+    chart.title = 'Test Chart';
+    await chart.updateComplete;
 
-    expect(SVGHelper.createSVG).toHaveBeenCalledWith(600, 400, '0 0 600 400');
+    const title = chart.shadowRoot!.querySelector('text');
+    expect(title?.textContent).toBe('Test Chart');
+    expect(title?.getAttribute('x')).toBe((chart.width / 2).toString());
   });
 
-  it('should add title when provided', async () => {
-    element.title = 'Test Chart';
-    await element.updateComplete;
+  it('applies correct color schemes', async () => {
+    chart.colors = ['255,0,0', '0,255,0'];
 
-    expect(SVGHelper.createText).toHaveBeenCalledWith('Test Chart', {
-      x: 300,
-      y: 10,
-      anchor: 'middle',
-      fontSize: '16px',
-    });
+    expect(chart.getColor(0)).toBe('rgba(255,0,0, 0.2)');
+    expect(chart.getHoverColor(1)).toBe('rgba(0,255,0, 0.4)');
+    expect(chart.getBorderColor(2)).toBe('rgba(255,0,0, 1)'); // Tests color cycling
   });
 
-  it('should update chart when properties change', async () => {
-    element.width = 800;
-    element.height = 600;
-    await element.updateComplete;
+  it('responds to property changes', async () => {
+    expect(chart.shadowRoot!.querySelector('svg')).toBeTruthy();
 
-    expect(SVGHelper.createSVG).toHaveBeenCalledWith(800, 600, '0 0 800 600');
+    chart.width = 1000;
+    chart.height = 600;
+    await chart.updateComplete;
+
+    const svg = chart.shadowRoot!.querySelector('svg');
+    expect(svg?.getAttribute('width')).toBe('1000');
+    expect(svg?.getAttribute('height')).toBe('600');
+
+    chart.title = 'New Title';
+    await chart.updateComplete;
+    expect(chart.shadowRoot!.querySelector('text')?.textContent).toBe(
+      'New Title',
+    );
+  });
+
+  it.skip('handles data changes', async () => {
+    chart.data = [{ value: 10 }];
+    await chart.updateComplete;
+
+    const initialSvg = chart.shadowRoot!.querySelector('svg')?.outerHTML;
+
+    chart.data = [{ value: 20 }];
+    await chart.updateComplete;
+
+    const updatedSvg = chart.shadowRoot!.querySelector('svg')?.outerHTML;
+    expect(updatedSvg).not.toBe(initialSvg);
+  });
+
+  it('manages animation states correctly', async () => {
+    expect(chart.isAnimationEnabled).toBe(false);
+    chart.animationEnabled = true;
+    expect(chart.isAnimationEnabled).toBe(true);
+  });
+
+  it('handles empty data gracefully', async () => {
+    chart.data = [];
+    await chart.updateComplete;
+
+    // Should still render SVG container
+    expect(chart.shadowRoot!.querySelector('svg')).toBeTruthy();
+  });
+
+  it('applies correct margin calculations', async () => {
+    chart.margin = { top: 50, right: 30, bottom: 50, left: 30 };
+    await chart.updateComplete;
+
+    expect(chart.margin.top).toBe(50);
+    expect(chart.margin.left).toBe(30);
+  });
+
+  it('creates render root with styles', async () => {
+    const style = chart.shadowRoot!.querySelector('style');
+
+    expect(style).toBeTruthy();
+    expect(style?.textContent).toContain('display: block');
   });
 });

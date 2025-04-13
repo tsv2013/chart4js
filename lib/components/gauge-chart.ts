@@ -167,7 +167,8 @@ export class GaugeChart extends BaseChart {
    * Draws the gauge chart by creating SVG elements.
    * Creates the background arc, colored zones, tick marks, and labels.
    */
-  private drawChart() {
+  protected override drawChart() {
+    super.drawChart();
     if (!this.svgElement) return;
 
     this.svgElement.innerHTML = '';
