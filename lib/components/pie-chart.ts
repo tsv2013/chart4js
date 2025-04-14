@@ -49,15 +49,6 @@ export class PieChart extends BaseChart {
   @state() private labelPositions: { x: number; y: number }[] = [];
 
   /**
-   * Lifecycle method called after the component is first updated.
-   * Draws the pie chart.
-   */
-  protected override firstUpdated() {
-    super.firstUpdated();
-    this.drawChart();
-  }
-
-  /**
    * Draws the pie chart by creating SVG elements for each segment.
    * Calculates segment angles, positions, and adds labels.
    */

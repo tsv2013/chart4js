@@ -166,6 +166,18 @@ export class BaseChart extends LitElement {
     return this.animationEnabled && this.isFirstRender;
   }
 
+  protected renderTitle(parent: SVGGraphicsElement | null) {
+    if (parent && this.title) {
+      const titleElement = SVGHelper.createText(this.title, {
+        x: this.width / 2,
+        y: this.margin.top / 2,
+        anchor: 'middle',
+        fontSize: '16px',
+      });
+      parent.appendChild(titleElement);
+    }
+  }
+
   /**
    * Initializes the chart by creating the SVG element and setting up the title.
    * This method is called after the component is first updated and can be
@@ -175,24 +187,24 @@ export class BaseChart extends LitElement {
     const container = this.shadowRoot?.querySelector('.chart-container');
     if (!container) return;
 
-    container.innerHTML = '';
-
-    this.svgElement = SVGHelper.createSVG(
-      this.width,
-      this.height,
-      `0 0 ${this.width} ${this.height}`,
-    );
-    container.appendChild(this.svgElement);
-
-    if (this.title) {
-      const titleElement = SVGHelper.createText(this.title, {
-        x: this.width / 2,
-        y: this.margin.top / 2,
-        anchor: 'middle',
-        fontSize: '16px',
-      });
-      this.svgElement.appendChild(titleElement);
+    if (this.svgElement) {
+      this.svgElement.innerHTML = '';
+      this.svgElement.setAttribute('width', this.width.toString());
+      this.svgElement.setAttribute('height', this.height.toString());
+      this.svgElement.setAttribute(
+        'viewBox',
+        `0 0 ${this.width} ${this.height}`,
+      );
+    } else {
+      this.svgElement = SVGHelper.createSVG(
+        this.width,
+        this.height,
+        `0 0 ${this.width} ${this.height}`,
+      );
+      container.appendChild(this.svgElement);
     }
+
+    this.renderTitle(this.svgElement);
   }
 
   /**

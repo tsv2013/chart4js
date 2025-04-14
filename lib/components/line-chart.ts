@@ -73,9 +73,8 @@ export class LineChart extends BaseChart {
    * Processes the data and draws the chart.
    */
   protected override firstUpdated() {
-    super.firstUpdated();
     this.processData();
-    this.drawChart();
+    super.firstUpdated();
   }
 
   /**
@@ -118,11 +117,7 @@ export class LineChart extends BaseChart {
 
   protected override drawChart() {
     super.drawChart();
-    if (!this.renderRoot || !this.datasets.length) return;
-
-    const svg = this.renderRoot.querySelector('svg');
-    if (!svg) return;
-    svg.innerHTML = '';
+    if (!this.svgElement || !this.data.length) return;
 
     const width = this.width - this.margin.left - this.margin.right;
     const height = this.height - this.margin.top - this.margin.bottom;
@@ -130,7 +125,7 @@ export class LineChart extends BaseChart {
     const g = SVGHelper.createGroup(
       `translate(${this.margin.left},${this.margin.top})`,
     );
-    svg.appendChild(g);
+    this.svgElement.appendChild(g);
 
     const allPoints = this.datasets.flatMap((dataset) => dataset.data);
     const xValues = allPoints.map((d) => d[this.xKey]);

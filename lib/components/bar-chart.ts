@@ -1,5 +1,5 @@
 import { BaseChart } from './base-chart';
-import { html } from 'lit';
+import { html, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SVGHelper } from '../utils/svg-helper';
 
@@ -37,16 +37,16 @@ export class BarChart extends BaseChart {
   /** Maximum number of bars to display at once */
   @property({ type: Number }) limit = 10;
 
+  /** Array of dataset keys for multi-dataset charts */
+
+  @property({ type: Array<string> }) datasets = [] as Array<string>;
+
   /** Current offset for paginated data display */
   @state() private offset = 0;
 
   /** Processed data ready for rendering */
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   @state() private processedData: any[] = [];
-
-  /** Array of dataset keys for multi-dataset charts */
-  /* eslint-disable  @typescript-eslint/no-explicit-any */
-  @state() private datasets: any[] = [];
 
   /** Maximum value in the dataset for scaling purposes */
   @state() private maxValue = 0;
@@ -59,9 +59,21 @@ export class BarChart extends BaseChart {
    * Processes the data and draws the chart.
    */
   protected override firstUpdated() {
-    super.firstUpdated();
     this.processData();
-    this.drawChart();
+    super.firstUpdated();
+  }
+
+  /**
+   * Lifecycle method called when component properties change.
+   * Re-draws the chart if the data has changed.
+   *
+   * @param changedProperties - Map of changed property names to their old values
+   */
+  protected override updated(changedProperties: PropertyValues) {
+    if (changedProperties.has('data') || changedProperties.has('datasets')) {
+      this.processData();
+    }
+    super.updated(changedProperties);
   }
 
   /**
@@ -174,22 +186,16 @@ export class BarChart extends BaseChart {
       if (this.hoveredBar === barIndex) {
         if (this.hasMultipleDatasets) {
           const datasetIndex = i % this.datasets.length;
-          bar.setAttribute(
-            'fill',
-            this.processedData[barIndex].hoverColors[datasetIndex],
-          );
+          bar.setAttribute('fill', this.getHoverColor(datasetIndex));
         } else {
-          bar.setAttribute('fill', this.processedData[barIndex].hoverColor);
+          bar.setAttribute('fill', this.getHoverColor(barIndex));
         }
       } else {
         if (this.hasMultipleDatasets) {
           const datasetIndex = i % this.datasets.length;
-          bar.setAttribute(
-            'fill',
-            this.processedData[barIndex].colors[datasetIndex],
-          );
+          bar.setAttribute('fill', this.getColor(datasetIndex));
         } else {
-          bar.setAttribute('fill', this.processedData[barIndex].color);
+          bar.setAttribute('fill', this.getColor(barIndex));
         }
       }
     });
@@ -197,11 +203,7 @@ export class BarChart extends BaseChart {
 
   protected override drawChart() {
     super.drawChart();
-    if (!this.renderRoot || !this.processedData.length) return;
-
-    const svg = this.renderRoot.querySelector('svg');
-    if (!svg) return;
-    svg.innerHTML = '';
+    if (!this.svgElement || !this.data.length) return;
 
     const width = this.width - this.margin.left - this.margin.right;
     const height = this.height - this.margin.top - this.margin.bottom;
@@ -209,7 +211,7 @@ export class BarChart extends BaseChart {
     const g = SVGHelper.createGroup(
       `translate(${this.margin.left},${this.margin.top})`,
     );
-    svg.appendChild(g);
+    this.svgElement.appendChild(g);
 
     const xScale = (x: number) => (x / this.processedData.length) * width;
     const yScale = (y: number) => (y / this.maxValue) * height; // Fixed: Correct y-axis direction
@@ -300,15 +302,20 @@ export class BarChart extends BaseChart {
 
           g.appendChild(bar);
 
-          setTimeout(() => {
+          const heightUpdater = () => {
             bar.setAttribute('height', barHeight.toString());
             bar.setAttribute('y', (height - barHeight).toString());
-          }, 50);
+          };
+          if (this.isAnimationEnabled) {
+            setTimeout(heightUpdater, 50);
+          } else {
+            heightUpdater();
+          }
 
           if (this.showValues) {
             const text = SVGHelper.createText(value.toFixed(0), {
               x: barX + singleBarWidth / 2,
-              y: height - barHeight - 5, // Fixed: Correct label position
+              y: height - barHeight - 5,
               anchor: 'middle',
             });
 
@@ -368,10 +375,15 @@ export class BarChart extends BaseChart {
 
         g.appendChild(bar);
 
-        setTimeout(() => {
+        const heightUpdater = () => {
           bar.setAttribute('height', barHeight.toString());
           bar.setAttribute('y', (height - barHeight).toString());
-        }, 50);
+        };
+        if (this.isAnimationEnabled) {
+          setTimeout(heightUpdater, 50);
+        } else {
+          heightUpdater();
+        }
 
         if (this.showValues) {
           const text = SVGHelper.createText(value.toFixed(0), {

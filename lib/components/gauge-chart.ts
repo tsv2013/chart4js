@@ -110,7 +110,6 @@ export class GaugeChart extends BaseChart {
    */
   protected override firstUpdated() {
     super.firstUpdated();
-    this.drawChart();
     this.animateValue();
   }
 
@@ -163,6 +162,9 @@ export class GaugeChart extends BaseChart {
     requestAnimationFrame(animate);
   }
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  protected renderTitle(_parent: SVGGraphicsElement | null) {}
+
   /**
    * Draws the gauge chart by creating SVG elements.
    * Creates the background arc, colored zones, tick marks, and labels.
@@ -171,18 +173,11 @@ export class GaugeChart extends BaseChart {
     super.drawChart();
     if (!this.svgElement) return;
 
-    this.svgElement.innerHTML = '';
-
     const width = this.width - this.margin.left - this.margin.right;
-    const height = this.height - this.margin.top - this.margin.bottom;
+    const height = this.height * 2 - this.margin.top - this.margin.bottom;
     const radius = Math.min(width, height) / 2;
     const centerX = this.width / 2;
-    const centerY = this.height / 2;
-
-    this.svgElement.setAttribute(
-      'viewBox',
-      `0 0 ${this.width} ${this.height * 0.7}`,
-    );
+    const centerY = this.height + this.margin.top;
 
     const g = SVGHelper.createGroup(`translate(${centerX},${centerY * 0.75})`);
     this.svgElement.appendChild(g);
