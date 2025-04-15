@@ -1,3 +1,5 @@
+[![Build'n'Test CI](https://github.com/tsv2013/chart4js/actions/workflows/project-build-test.yml/badge.svg)](https://github.com/tsv2013/chart4js/actions/workflows/project-build-test.yml)
+
 # Charts4JS
 
 A lightweight, dependency-free chart library built with Lit and TypeScript.
