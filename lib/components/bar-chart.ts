@@ -442,14 +442,11 @@ export class BarChart extends BaseChart {
       });
       legendItem.appendChild(box);
 
-      const text = SVGHelper.createText(
-        dataset.label || `Dataset ${index + 1}`,
-        {
-          x: 20,
-          y: 4,
-          fontSize: '12px',
-        },
-      );
+      const text = SVGHelper.createText(dataset || `Dataset ${index + 1}`, {
+        x: 20,
+        y: 4,
+        fontSize: '12px',
+      });
       legendItem.appendChild(text);
 
       legend.appendChild(legendItem);
