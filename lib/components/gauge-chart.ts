@@ -121,6 +121,9 @@ export class GaugeChart extends BaseChart {
    */
   protected override updated(changedProperties: Map<string, object>) {
     super.updated(changedProperties);
+    if (changedProperties.has('animationEnabled')) {
+      this.animationInProgress = false;
+    }
     if (changedProperties.has('value')) {
       this.animateValue();
     }
@@ -143,8 +146,8 @@ export class GaugeChart extends BaseChart {
     const endValue = this.value;
     const startTime = performance.now();
 
-    const animate = (currentTime: number) => {
-      const elapsedTime = currentTime - startTime;
+    const animate = () => {
+      const elapsedTime = performance.now() - startTime;
       const progress = Math.min(elapsedTime / this.animationDuration, 1);
 
       const easeOut = 1 - Math.pow(1 - progress, 3);

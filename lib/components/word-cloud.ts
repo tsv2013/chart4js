@@ -221,7 +221,7 @@ export class WordCloud extends LitElement {
     const container = this.shadowRoot?.querySelector(
       '.word-cloud-container',
     ) as HTMLDivElement;
-    if (!container) return;
+    if (!container || !this.words.length) return;
 
     container.style.position = 'relative';
     if (this.options.maxHeight > 0) {
